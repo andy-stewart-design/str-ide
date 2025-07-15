@@ -13,7 +13,7 @@ function initMonacoEditor(container: HTMLElement) {
 
   monaco.editor.defineTheme("NightOwl", theme);
 
-  return monaco.editor.create(container, {
+  const editor = monaco.editor.create(container, {
     value: "",
     language: "typescript",
     theme: "NightOwl",
@@ -33,6 +33,8 @@ function initMonacoEditor(container: HTMLElement) {
     fontSize: 14,
     automaticLayout: true,
   });
+
+  return editor;
 }
 
 export { initMonacoEditor };
