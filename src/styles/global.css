@@ -1,0 +1,43 @@
+:is(*, *::before, *::after) {
+  box-sizing: border-box;
+}
+
+:is(html, body) {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  background: #011627;
+}
+
+#root {
+  height: 100%;
+}
+
+#app {
+  display: grid;
+  height: 100%;
+
+  & > * {
+    grid-area: -1 / 1;
+  }
+
+  &[data-editable="true"] {
+    #editor-fallback {
+      visibility: hidden;
+    }
+  }
+
+  &[data-editable="false"] {
+    #editor-container {
+      visibility: hidden;
+    }
+  }
+}
+
+#editor-fallback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

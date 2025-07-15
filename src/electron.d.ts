@@ -1,3 +1,6 @@
+type OpenedFile = { canceled: false; path: string; contents: string };
+type CanceledOpenedFile = { canceled: true };
+
 export interface IElectronAPI {
   versions: {
     node: string;
@@ -5,7 +8,7 @@ export interface IElectronAPI {
     electron: string;
   };
   onUpdateCounter: (cb: (val: number) => void) => void;
-  openFile: () => Promise<{ canceled: boolean; path?: string | undefined }>;
+  openFile: () => Promise<OpenedFile | CanceledOpenedFile>;
 }
 
 declare global {

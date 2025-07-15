@@ -2,17 +2,21 @@ import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 import started from "electron-squirrel-startup";
-import { createSystemMenu } from "./menu";
+import { createSystemMenu } from "./utils/system-menu";
 
 if (started) app.quit();
 
-async function handleFileOpen(): Promise<{ canceled: boolean; path?: string }> {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    filters: [{ name: "Markdown", extensions: ["md"] }],
-  });
+type OpenedFile = { canceled: false; path: string; contents: string };
+type CanceledOpenedFile = { canceled: true };
+
+async function handleFileOpen(): Promise<OpenedFile | CanceledOpenedFile> {
+  const { canceled, filePaths } = await dialog.showOpenDialog({});
   if (canceled) return { canceled } as const;
-  console.log(readFileSync(filePaths[0], "utf-8"));
-  return { canceled, path: filePaths[0] } as const;
+  return {
+    canceled,
+    path: filePaths[0],
+    contents: readFileSync(filePaths[0], "utf-8"),
+  } as const;
 }
 
 const createWindow = () => {

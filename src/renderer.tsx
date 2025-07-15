@@ -1,74 +1,46 @@
-/* eslint-disable import/no-unresolved */
 import { createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
-import * as monaco from "monaco-editor";
-// @ts-expect-error: Need to figure out why this is erroring here but not in my other vite project
-import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
-import theme from "./theme";
-import defaultBop from "./boots-and-cats";
-import "./index.css";
+import { initMonacoEditor } from "./utils/monaco-editor";
+import "./styles/global.css";
 
-const { versions, onUpdateCounter, openFile } = window.electronAPI;
+type Editor = ReturnType<typeof initMonacoEditor>;
+type FileData = {
+  path: string;
+  contents: string;
+};
+
+const { openFile } = window.electronAPI;
 
 function App() {
-  const [count, setCount] = createSignal(0);
+  const [editor, setEditor] = createSignal<Editor | null>(null);
+  const [file, setFile] = createSignal<FileData | null>(null);
   let editorContainer: HTMLDivElement;
 
-  onUpdateCounter((v: number) => {
-    setCount(count() + v);
-  });
-
   async function handleClick() {
-    const { path } = await openFile();
-    console.log({ path });
+    const fileData = await openFile();
+    if (fileData.canceled === false) {
+      setFile({ path: fileData.path, contents: fileData.contents });
+      editor()?.setValue(fileData.contents);
+    }
   }
 
   onMount(() => {
-    self.MonacoEnvironment = {
-      getWorker() {
-        return new tsWorker();
-      },
-    };
-
-    monaco.editor.defineTheme("NightOwl", theme);
-
-    const editor = monaco.editor.create(editorContainer, {
-      value: defaultBop,
-      language: "typescript",
-      theme: "NightOwl",
-      minimap: {
-        enabled: false,
-      },
-      autoClosingQuotes: "always",
-      autoClosingBrackets: "always",
-      renderValidationDecorations: "off",
-      parameterHints: {
-        enabled: false,
-      },
-      quickSuggestions: false,
-      hover: {
-        enabled: false,
-      },
-      fontSize: 14,
-      automaticLayout: true,
-    });
+    const monacoEditor = initMonacoEditor(editorContainer);
+    setEditor(monacoEditor);
   });
 
   return (
-    <div id="app">
-      {/* <h1>SolidJS Counter</h1>
-      <p>Count: {count()}</p>
-      <button onClick={() => setCount(count() + 1)}>Increment</button>
-      <button onClick={handleClick}>Open file</button>
-      <p>
-        {`This app is using Chrome (v${versions.chrome}), Node.js (v${versions.node}), and Electron (v${versions.electron})`}
-      </p> */}
-      <div id="monaco-editor" ref={editorContainer} />
+    <div id="app" data-editable={Boolean(file())}>
+      <div id="editor-container" ref={editorContainer} />
+      <div id="editor-fallback" style={{ "z-index": 1 }}>
+        <button onclick={handleClick}>Open file</button>
+      </div>
     </div>
   );
 }
 
 const root = document.getElementById("root");
+
 if (root) {
   render(() => <App />, root);
 } else {
