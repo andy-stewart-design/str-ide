@@ -23,6 +23,10 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    // remove the default titlebar
+    titleBarStyle: "hidden",
+    // expose window controls in Windows/Linux
+    ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },

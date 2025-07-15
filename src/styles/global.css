@@ -12,6 +12,8 @@
 }
 
 #root {
+  display: grid;
+  grid-template-rows: 32px minmax(0, 1fr);
   height: 100%;
 }
 

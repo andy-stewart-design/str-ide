@@ -4,10 +4,7 @@ import { initMonacoEditor } from "./utils/monaco-editor";
 import "./styles/global.css";
 
 type Editor = ReturnType<typeof initMonacoEditor>;
-type FileData = {
-  path: string;
-  contents: string;
-};
+type FileData = { path: string; contents: string };
 
 const { openFile } = window.electronAPI;
 
@@ -30,12 +27,15 @@ function App() {
   });
 
   return (
-    <div id="app" data-editable={Boolean(file())}>
-      <div id="editor-container" ref={editorContainer} />
-      <div id="editor-fallback" style={{ "z-index": 1 }}>
-        <button onclick={handleClick}>Open file</button>
+    <>
+      <div />
+      <div id="app" data-editable={Boolean(file())}>
+        <div id="editor-container" ref={editorContainer} />
+        <div id="editor-fallback" style={{ "z-index": 1 }}>
+          <button onclick={handleClick}>Open file</button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
