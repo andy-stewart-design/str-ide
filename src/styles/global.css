@@ -17,6 +17,10 @@
   height: 100%;
 }
 
+#navbar {
+  app-region: drag;
+}
+
 #app {
   display: grid;
   height: 100%;

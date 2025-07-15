@@ -1,4 +1,5 @@
 import { app, Menu, BrowserWindow } from "electron";
+import { handleFileOpen } from "../main";
 
 export function createSystemMenu(win: BrowserWindow) {
   const menu = Menu.buildFromTemplate([
@@ -21,6 +22,21 @@ export function createSystemMenu(win: BrowserWindow) {
         {
           click: () => win.webContents.send("update-counter", -1),
           label: "Decrement",
+        },
+      ],
+    },
+    {
+      label: "File",
+      submenu: [
+        {
+          label: "Open",
+          accelerator: "CmdOrCtrl+O",
+          click: async () => {
+            const data = await handleFileOpen();
+            if (data.canceled === false) {
+              win.webContents.send("file-opened", data);
+            }
+          },
         },
       ],
     },

@@ -1,12 +1,13 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, IpcMainEvent } from "electron";
 import path from "node:path";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import started from "electron-squirrel-startup";
 import { createSystemMenu } from "./utils/system-menu";
 
 if (started) app.quit();
 
-type OpenedFile = { canceled: false; path: string; contents: string };
+type FileData = { path: string; contents: string };
+type OpenedFile = FileData & { canceled: false };
 type CanceledOpenedFile = { canceled: true };
 
 async function handleFileOpen(): Promise<OpenedFile | CanceledOpenedFile> {
@@ -16,7 +17,11 @@ async function handleFileOpen(): Promise<OpenedFile | CanceledOpenedFile> {
     canceled,
     path: filePaths[0],
     contents: readFileSync(filePaths[0], "utf-8"),
-  } as const;
+  };
+}
+
+async function handleSaveFile(_event: IpcMainEvent, fileData: FileData) {
+  writeFileSync(fileData.path, fileData.contents, "utf-8");
 }
 
 const createWindow = () => {
@@ -44,6 +49,7 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   ipcMain.handle("dialog:openFile", handleFileOpen);
+  ipcMain.on("save-file", handleSaveFile);
   createWindow();
 });
 
@@ -58,3 +64,5 @@ app.on("activate", () => {
     createWindow();
   }
 });
+
+export { handleFileOpen };
