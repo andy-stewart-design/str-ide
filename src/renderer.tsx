@@ -50,8 +50,6 @@ function App() {
     }
 
     window.addEventListener("keydown", (e) => {
-      console.log(e.key);
-
       if (e.altKey && e.key === "Enter") {
         e.preventDefault();
         handlePlay();
@@ -62,12 +60,6 @@ function App() {
         handleSaveFile();
       } else if (e.key === "w" && e.metaKey) {
         setFile(null);
-      } else if (e.key === "v" && e.metaKey) {
-        console.log("COMMAND + V");
-        console.log(
-          monacoEditor.getAction("editor.action.clipboardPasteAction")
-        );
-        monacoEditor.trigger("keyboard", "paste", null);
       }
     });
   });
