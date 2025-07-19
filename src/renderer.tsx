@@ -1,13 +1,12 @@
 import { createSignal, onMount } from "solid-js";
 import { render } from "solid-js/web";
-import { initMonacoEditor } from "./utils/monaco-editor";
-import { prebake } from "./utils/strudel.js";
-import "./styles/global.css";
+import { initMonacoEditor } from "@/utils/monaco-editor";
+import { prebake } from "@/utils/strudel.js";
+import type { FileData } from "@/types/file-data";
+import type { Editor } from "@/types/monaco";
+import "@/styles/global.css";
 
-type Editor = ReturnType<typeof initMonacoEditor>;
-type FileData = { path: string; content: string; name: string };
-
-const { onFileOpened, openFile } = window.electronAPI;
+const { onFileOpened, openFile, onRequestSave } = window.electronAPI;
 
 function App() {
   // const [playing, setPlaying] = createSignal(false);
@@ -24,17 +23,15 @@ function App() {
     }
   }
 
-  function handleSaveFile() {
-    // const path = file()?.path;
-    // const contents = editor()?.getValue();
-    // if (path && contents) {
-    //   saveFile({ path, contents });
-    // }
-  }
-
   onFileOpened((data) => {
     setFile(data);
     editor()?.setValue(data.content);
+  });
+
+  onRequestSave(() => {
+    const content = editor().getValue();
+    setFile((c) => ({ ...c, content }));
+    return { path: file().path, content };
   });
 
   onMount(async () => {
@@ -60,8 +57,6 @@ function App() {
       } else if (e.key === "≥" && e.altKey) {
         e.preventDefault();
         handlePause();
-      } else if (e.key === "s" && e.metaKey) {
-        handleSaveFile();
       } else if (e.key === "w" && e.metaKey) {
         setFile(null);
       }

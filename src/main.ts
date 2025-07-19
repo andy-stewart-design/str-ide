@@ -1,8 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain, screen } from "electron";
-import path from "node:path";
-import { readFileSync, writeFileSync } from "node:fs";
 import started from "electron-squirrel-startup";
-import { createSystemMenu } from "./utils/system-menu";
+import path from "node:path";
+import { readFileSync, writeFileSync, type WriteFileOptions } from "node:fs";
+import { createSystemMenu } from "@/utils/system-menu";
 
 if (started) app.quit();
 
@@ -32,6 +32,19 @@ async function openFile() {
   }
 }
 
+async function saveFile(
+  path: string,
+  content: string,
+  encoding: WriteFileOptions = "utf-8"
+) {
+  try {
+    writeFileSync(path, content, encoding);
+  } catch (error) {
+    console.error("Error saving file:", error);
+    throw error;
+  }
+}
+
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width } = primaryDisplay.workAreaSize;
@@ -48,7 +61,7 @@ const createWindow = () => {
     },
   });
 
-  createSystemMenu(mainWindow);
+  createSystemMenu();
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
@@ -60,6 +73,9 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
   ipcMain.handle("open-file-dialog", openFile);
+  ipcMain.handle("save-file", (_, path: string, content: string) =>
+    saveFile(path, content)
+  );
   createWindow();
 });
 
@@ -75,4 +91,4 @@ app.on("activate", () => {
   }
 });
 
-export { openFile };
+export { openFile, saveFile };

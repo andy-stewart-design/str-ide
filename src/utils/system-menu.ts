@@ -1,7 +1,7 @@
 import { app, Menu, BrowserWindow } from "electron";
-import { openFile } from "../main";
+import { openFile } from "@/main";
 
-export function createSystemMenu(win: BrowserWindow) {
+export function createSystemMenu() {
   const menu = Menu.buildFromTemplate([
     {
       label: app.name,
@@ -9,19 +9,6 @@ export function createSystemMenu(win: BrowserWindow) {
         {
           role: "quit",
           label: "Quit Electron Counter",
-        },
-      ],
-    },
-    {
-      label: "Counter",
-      submenu: [
-        {
-          click: () => win.webContents.send("update-counter", 1),
-          label: "Increment",
-        },
-        {
-          click: () => win.webContents.send("update-counter", -1),
-          label: "Decrement",
         },
       ],
     },
@@ -39,6 +26,15 @@ export function createSystemMenu(win: BrowserWindow) {
             if (data) {
               focusedWindow.webContents.send("file-opened", data);
             }
+          },
+        },
+        {
+          label: "Save",
+          accelerator: "CmdOrCtrl+S",
+          click: async () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (!focusedWindow) return;
+            focusedWindow.webContents.send("request-save");
           },
         },
       ],
