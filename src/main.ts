@@ -1,4 +1,11 @@
-import { app, BrowserWindow, dialog, ipcMain, IpcMainEvent } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  IpcMainEvent,
+  screen,
+} from "electron";
 import path from "node:path";
 import { readFileSync, writeFileSync } from "node:fs";
 import started from "electron-squirrel-startup";
@@ -25,9 +32,12 @@ async function handleSaveFile(_event: IpcMainEvent, fileData: FileData) {
 }
 
 const createWindow = () => {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: Math.floor(width * 0.9),
+    height: Math.floor(height * 0.9),
     // remove the default titlebar
     titleBarStyle: "hidden",
     // expose window controls in Windows/Linux
