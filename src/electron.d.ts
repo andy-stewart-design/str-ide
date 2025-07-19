@@ -1,7 +1,4 @@
-type FileData = { path: string; contents: string };
-type OpenedFile = FileData & { canceled: false };
-type OpenedFile = { canceled: false; path: string; contents: string };
-type CanceledOpenedFile = { canceled: true };
+import type { FileData } from "./types/file-data";
 
 export interface IElectronAPI {
   versions: {
@@ -10,8 +7,9 @@ export interface IElectronAPI {
     electron: string;
   };
   onUpdateCounter: (cb: (val: number) => void) => void;
-  openFile: () => Promise<OpenedFile | CanceledOpenedFile>;
-  saveFile: (fileData: FileData) => void;
+  onFileOpened: (callback: (fileData: FileData) => void) => void;
+  openFile: () => Promise<FileData | null>;
+  removeFileOpenedListener: () => void;
 }
 
 declare global {

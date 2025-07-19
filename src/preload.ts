@@ -1,6 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-
-type FileData = { path: string; contents: string };
+import type { FileData } from "./types/file-data";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   versions: {
@@ -11,6 +10,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onUpdateCounter: (cb: (val: number) => void) => {
     ipcRenderer.on("update-counter", (_event, val: number) => cb(val));
   },
-  openFile: () => ipcRenderer.invoke("dialog:openFile"),
-  saveFile: (fileData: FileData) => ipcRenderer.send("save-file", fileData),
+  onFileOpened: (callback: (fileData: FileData) => void) => {
+    ipcRenderer.on("file-opened", (_event, fileData: FileData) =>
+      callback(fileData)
+    );
+  },
+  openFile: (): Promise<FileData | null> => {
+    return ipcRenderer.invoke("open-file-dialog");
+  },
+  removeFileOpenedListener: () => {
+    ipcRenderer.removeAllListeners("file-opened");
+  },
 });

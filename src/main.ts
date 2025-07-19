@@ -1,11 +1,4 @@
-import {
-  app,
-  BrowserWindow,
-  dialog,
-  ipcMain,
-  IpcMainEvent,
-  screen,
-} from "electron";
+import { app, BrowserWindow, dialog, ipcMain, screen } from "electron";
 import path from "node:path";
 import { readFileSync, writeFileSync } from "node:fs";
 import started from "electron-squirrel-startup";
@@ -13,31 +6,39 @@ import { createSystemMenu } from "./utils/system-menu";
 
 if (started) app.quit();
 
-type FileData = { path: string; contents: string };
-type OpenedFile = FileData & { canceled: false };
-type CanceledOpenedFile = { canceled: true };
+async function openFile() {
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  if (!focusedWindow) return;
 
-async function handleFileOpen(): Promise<OpenedFile | CanceledOpenedFile> {
-  const { canceled, filePaths } = await dialog.showOpenDialog({});
-  if (canceled) return { canceled } as const;
-  return {
-    canceled,
-    path: filePaths[0],
-    contents: readFileSync(filePaths[0], "utf-8"),
-  };
-}
+  try {
+    const result = await dialog.showOpenDialog({});
 
-async function handleSaveFile(_event: IpcMainEvent, fileData: FileData) {
-  writeFileSync(fileData.path, fileData.contents, "utf-8");
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+
+    const filePath = result.filePaths[0];
+    const fileContent = readFileSync(filePath, "utf-8");
+    const fileName = path.basename(filePath);
+
+    return {
+      path: filePath,
+      name: fileName,
+      content: fileContent,
+    };
+  } catch (error) {
+    console.error("Error opening file:", error);
+    dialog.showErrorBox("Error", `Failed to open file: ${error.message}`);
+  }
 }
 
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { width, height } = primaryDisplay.workAreaSize;
+  const { width } = primaryDisplay.workAreaSize;
 
   const mainWindow = new BrowserWindow({
-    width: Math.floor(width * 0.9),
-    height: Math.floor(height * 0.9),
+    width: Math.floor(width * 0.75),
+    height: Math.floor(((width * 0.75) / 3) * 2),
     // remove the default titlebar
     titleBarStyle: "hidden",
     // expose window controls in Windows/Linux
@@ -58,8 +59,7 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
-  ipcMain.handle("dialog:openFile", handleFileOpen);
-  ipcMain.on("save-file", handleSaveFile);
+  ipcMain.handle("open-file-dialog", openFile);
   createWindow();
 });
 
@@ -75,4 +75,4 @@ app.on("activate", () => {
   }
 });
 
-export { handleFileOpen };
+export { openFile };

@@ -1,5 +1,5 @@
 import { app, Menu, BrowserWindow } from "electron";
-import { handleFileOpen } from "../main";
+import { openFile } from "../main";
 
 export function createSystemMenu(win: BrowserWindow) {
   const menu = Menu.buildFromTemplate([
@@ -32,9 +32,12 @@ export function createSystemMenu(win: BrowserWindow) {
           label: "Open",
           accelerator: "CmdOrCtrl+O",
           click: async () => {
-            const data = await handleFileOpen();
-            if (data.canceled === false) {
-              win.webContents.send("file-opened", data);
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (!focusedWindow) return;
+
+            const data = await openFile();
+            if (data) {
+              focusedWindow.webContents.send("file-opened", data);
             }
           },
         },

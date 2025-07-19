@@ -1,6 +1,6 @@
 {
-  "name": "electron-counter",
-  "productName": "electron-counter",
+  "name": "str-ide",
+  "productName": "str-ide",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",

@@ -5,9 +5,9 @@ import { prebake } from "./utils/strudel.js";
 import "./styles/global.css";
 
 type Editor = ReturnType<typeof initMonacoEditor>;
-type FileData = { path: string; contents: string };
+type FileData = { path: string; content: string; name: string };
 
-const { openFile, saveFile } = window.electronAPI;
+const { onFileOpened, openFile } = window.electronAPI;
 
 function App() {
   // const [playing, setPlaying] = createSignal(false);
@@ -16,13 +16,26 @@ function App() {
   const [file, setFile] = createSignal<FileData | null>(null);
   let editorContainer: HTMLDivElement;
 
-  async function handleClick() {
-    const fileData = await openFile();
-    if (fileData.canceled === false) {
-      setFile({ path: fileData.path, contents: fileData.contents });
-      editor()?.setValue(fileData.contents);
+  async function handleOpenFile() {
+    const data = await openFile();
+    if (data) {
+      setFile(data);
+      editor()?.setValue(data.content);
     }
   }
+
+  function handleSaveFile() {
+    // const path = file()?.path;
+    // const contents = editor()?.getValue();
+    // if (path && contents) {
+    //   saveFile({ path, contents });
+    // }
+  }
+
+  onFileOpened((data) => {
+    setFile(data);
+    editor()?.setValue(data.content);
+  });
 
   onMount(async () => {
     const strudel = await prebake();
@@ -38,15 +51,6 @@ function App() {
     function handlePause() {
       strudel.stop();
       // setPlaying(false);
-    }
-
-    function handleSaveFile() {
-      const path = file()?.path;
-      const contents = editor()?.getValue();
-
-      if (path && contents) {
-        saveFile({ path, contents });
-      }
     }
 
     window.addEventListener("keydown", (e) => {
@@ -70,7 +74,7 @@ function App() {
       <div id="app" data-editable={Boolean(file())}>
         <div id="editor-container" ref={editorContainer} />
         <div id="editor-fallback" style={{ "z-index": 1 }}>
-          <button onclick={handleClick}>Open file</button>
+          <button onclick={handleOpenFile}>Open file</button>
         </div>
       </div>
     </>
