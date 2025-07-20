@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { render } from "solid-js/web";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
@@ -33,10 +33,7 @@ function App() {
     setEditor(monacoEditor);
   });
 
-  onRequestNewFile(() => {
-    setFile({ path: null, name: null, content: "" });
-    editor()?.setValue("");
-  });
+  onRequestNewFile(handleCreateNewFile);
 
   onFileOpened((data) => {
     setFile(data);
@@ -68,6 +65,12 @@ function App() {
 
   onRequestPause(() => strudel()?.stop());
 
+  function handleCreateNewFile() {
+    setFile({ path: null, name: null, content: "" });
+    editor()?.setValue("");
+    editor()?.focus();
+  }
+
   async function handleOpenFile() {
     const data = await openFile();
     if (data) {
@@ -79,13 +82,14 @@ function App() {
   return (
     <>
       <div id="navbar">
-        <p style={{ color: "white", "text-align": "center", margin: 0 }}>
-          {file()?.path ?? "New file"}
-        </p>
+        <Show when={file()}>
+          <p>{file()?.path ?? "untitled"}</p>
+        </Show>
       </div>
       <div id="app" data-editable={Boolean(file())}>
         <div id="editor-container" ref={editorContainer} />
         <div id="editor-fallback" style={{ "z-index": 1 }}>
+          <button onclick={handleCreateNewFile}>New file</button>
           <button onclick={handleOpenFile}>Open file</button>
         </div>
       </div>
