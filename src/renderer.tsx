@@ -21,9 +21,10 @@ function App() {
   const [strudel, setStrudel] = createSignal<any | null>(null);
   const [editor, setEditor] = createSignal<Editor | null>(null);
   const [file, setFile] = createSignal<FileData | null>(null);
-  let editorContainer: HTMLDivElement;
+  let editorContainer: HTMLDivElement | undefined;
 
   onMount(async () => {
+    if (!editorContainer) return;
     const strudel = await prebake();
     const monacoEditor = initMonacoEditor(editorContainer);
     setStrudel(strudel);
@@ -36,9 +37,12 @@ function App() {
   });
 
   onRequestSave(() => {
-    const content = editor().getValue();
-    setFile((c) => ({ ...c, content }));
-    return { path: file().path, content };
+    const fileData = file();
+    const content = editor()?.getValue();
+    if (!fileData || !content) return { path: "", content: "" };
+
+    setFile({ ...fileData, content });
+    return { path: fileData.path, content };
   });
 
   onRequestClose(() => {
@@ -48,7 +52,7 @@ function App() {
 
   onCleanup(() => removeAllListeners());
 
-  onRequestPlay(() => strudel()?.evaluate(editor().getValue()));
+  onRequestPlay(() => strudel()?.evaluate(editor()?.getValue()));
 
   onRequestPause(() => strudel()?.stop());
 

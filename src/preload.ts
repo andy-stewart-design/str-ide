@@ -16,9 +16,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
       callback(fileData)
     );
   },
-  onRequestSave: (callback: () => { path: string; content: string }) => {
+  onRequestSave: (
+    callback: () => { path: FileData["path"]; content: string } | null
+  ) => {
     ipcRenderer.on("request-save", () => {
-      const { path, content } = callback();
+      const result = callback();
+      if (!result) return;
+      const { path, content } = result;
       return ipcRenderer.invoke("save-file", path, content);
     });
   },

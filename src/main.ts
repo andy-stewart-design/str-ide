@@ -10,6 +10,7 @@ import started from "electron-squirrel-startup";
 import path from "node:path";
 import { readFileSync, writeFileSync, type WriteFileOptions } from "node:fs";
 import { createSystemMenu } from "@/utils/system-menu";
+import type { FileData } from "@/types/file-data";
 
 if (started) app.quit();
 
@@ -34,18 +35,29 @@ async function openFile() {
       content: fileContent,
     };
   } catch (error) {
+    const isError = error && typeof error === "object" && "message" in error;
+    const message = isError ? error.message : "Unknown error";
     console.error("Error opening file:", error);
-    dialog.showErrorBox("Error", `Failed to open file: ${error.message}`);
+    dialog.showErrorBox("Error", `Failed to open file: ${message}`);
   }
 }
 
 async function saveFile(
-  path: string,
+  path: FileData["path"],
   content: string,
   encoding: WriteFileOptions = "utf-8"
 ) {
   try {
-    writeFileSync(path, content, encoding);
+    if (path) {
+      writeFileSync(path, content, encoding);
+    } else {
+      const { filePath, canceled } = await dialog.showSaveDialog({
+        defaultPath: "untitled.std",
+      });
+      if (!canceled) {
+        writeFileSync(filePath, content, encoding);
+      }
+    }
   } catch (error) {
     console.error("Error saving file:", error);
     throw error;

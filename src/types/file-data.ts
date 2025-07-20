@@ -1,7 +1,7 @@
 interface FileData {
-  path: string;
+  path: string | null;
   content: string;
-  name: string;
+  name: string | null;
 }
 
 export type { FileData };
