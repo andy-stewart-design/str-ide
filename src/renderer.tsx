@@ -51,12 +51,18 @@ function App() {
 
   onFileSaved((data) => {
     setFile(data);
-    editor()?.setValue(data.content);
   });
 
   onRequestClose(() => {
-    setFile(null);
-    editor()?.setValue("");
+    const fileContent = file()?.content;
+    const editorContent = editor()?.getValue();
+
+    if (fileContent === editorContent) {
+      setFile(null);
+      editor()?.setValue("");
+    } else {
+      console.log("Add popup to warn about need to save");
+    }
   });
 
   onCleanup(() => removeAllListeners());
