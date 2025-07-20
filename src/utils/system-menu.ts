@@ -16,6 +16,15 @@ export function createSystemMenu() {
       label: "File",
       submenu: [
         {
+          label: "New File",
+          accelerator: "CmdOrCtrl+N",
+          click: async () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send(
+              "request-new-file"
+            );
+          },
+        },
+        {
           label: "Open File",
           accelerator: "CmdOrCtrl+O",
           click: async () => {

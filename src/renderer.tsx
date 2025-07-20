@@ -7,6 +7,7 @@ import type { Editor } from "@/types/monaco";
 import "@/styles/global.css";
 
 const {
+  onRequestNewFile,
   onFileOpened,
   openFile,
   onRequestSave,
@@ -30,6 +31,11 @@ function App() {
     const monacoEditor = initMonacoEditor(editorContainer);
     setStrudel(strudel);
     setEditor(monacoEditor);
+  });
+
+  onRequestNewFile(() => {
+    setFile({ path: null, name: null, content: "" });
+    editor()?.setValue("");
   });
 
   onFileOpened((data) => {

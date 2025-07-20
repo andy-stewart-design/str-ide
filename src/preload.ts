@@ -2,6 +2,9 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { FileData } from "@/types/file-data";
 
 contextBridge.exposeInMainWorld("electronAPI", {
+  onRequestNewFile: (callback: () => void) => {
+    ipcRenderer.on("request-new-file", callback);
+  },
   openFile: (): Promise<FileData | null> => {
     return ipcRenderer.invoke("open-file-dialog");
   },
@@ -17,7 +20,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
       const result = callback();
       if (!result) return;
       const { path, content } = result;
-      return ipcRenderer.invoke("save-file", null, content);
+      return ipcRenderer.invoke("save-file", path, content);
     });
   },
   onFileSaved: (callback: (data: any) => void) => {
@@ -33,8 +36,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("request-pause", callback);
   },
   removeAllListeners: () => {
+    ipcRenderer.removeAllListeners("request-new-file");
     ipcRenderer.removeAllListeners("file-opened");
     ipcRenderer.removeAllListeners("request-save");
+    ipcRenderer.removeAllListeners("file-saved");
     ipcRenderer.removeAllListeners("request-close");
     ipcRenderer.removeAllListeners("request-play");
     ipcRenderer.removeAllListeners("request-pause");

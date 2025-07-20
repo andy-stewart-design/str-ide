@@ -2,6 +2,7 @@ import type { FileData } from "@/types/file-data";
 import path from "node:path";
 
 export interface IElectronAPI {
+  onRequestNewFile: (callback: () => void) => void;
   onFileOpened: (callback: (fileData: FileData) => void) => void;
   openFile: () => Promise<FileData | null>;
   onRequestSave: (
