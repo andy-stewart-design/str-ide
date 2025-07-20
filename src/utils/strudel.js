@@ -4,14 +4,15 @@ import {
   webaudioOutput,
   initAudioOnFirstClick,
   registerSynthSounds,
+  registerZZFXSounds,
   samples,
   aliasBank,
 } from "@strudel/webaudio";
+import * as SoundFonts from "@strudel/soundfonts";
 import { transpiler } from "@strudel/transpiler";
 
 async function prebake() {
   initAudioOnFirstClick();
-  registerSynthSounds();
 
   evalScope(
     import("@strudel/core"),
@@ -25,6 +26,9 @@ async function prebake() {
   const ds = "https://raw.githubusercontent.com/felixroos/dough-samples/main/";
   const ts = "https://raw.githubusercontent.com/todepond/samples/main/";
   await Promise.all([
+    registerSynthSounds(),
+    registerZZFXSounds(),
+    SoundFonts.registerSoundfonts(),
     samples(`${ds}/tidal-drum-machines.json`),
     samples(`${ds}/piano.json`),
     samples(`${ds}/Dirt-Samples.json`),

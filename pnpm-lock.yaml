@@ -17,6 +17,9 @@ importers:
       '@strudel/mini':
         specifier: ^1.2.2
         version: 1.2.2
+      '@strudel/soundfonts':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@strudel/tonal':
         specifier: ^1.2.2
         version: 1.2.2
@@ -707,6 +710,9 @@ packages:
 
   '@strudel/mini@1.2.2':
     resolution: {integrity: sha512-kMGdAp6J6dI6oZijQdobVn/STt8bNQkMNcwe341E2gnRvz3S3KbYAKRVvAKrm9jFzy1zoL4F+a1BnqoOqlOPDw==}
+
+  '@strudel/soundfonts@1.2.3':
+    resolution: {integrity: sha512-uLIJfWMnENwXBe2PuhrrP6GIu21RLtgmCzaZMxBc/U+NrlLQquKc9TAQKH5narPXYFnEYPXB8JLylEcGAG2OXA==}
 
   '@strudel/tonal@1.2.2':
     resolution: {integrity: sha512-p09mb2gHZj0NXYbDyuXAK2NQZtrm6n589kE2JdlBTUuxtHHzyNzHzE3WeuGur2QY7avjwM5mw3kPnelstLTQVw==}
@@ -2755,6 +2761,9 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
+  sfumato@0.1.2:
+    resolution: {integrity: sha512-j2s5BLUS5VUNtaK1l+v+yal3XjjV7JXCQIwE5Xs4yiQ3HJ+2Fc/dd3IkkrVHn0AJO2epShSWVoP3GnE0TvPdMg==}
+
   shebang-command@1.2.0:
     resolution: {integrity: sha512-EV3L1+UQWGor21OmnvojK36mhg+TyIKDh3iFBKBohr5xeXIhNBcx8oWdgkTEEQ+BEFFYdLRuqMfd5L84N1V5Vg==}
     engines: {node: '>=0.10.0'}
@@ -2813,6 +2822,12 @@ packages:
     resolution: {integrity: sha512-F3aPsX6hVw9ttm5LYlth8Q15x6MlI/J3Dn+o3EQyRTtTxidepSTwAYdozt01/YA+7ObcciagGEyXIopGZzQtbA==}
     peerDependencies:
       solid-js: ^1.3
+
+  soundfont2@0.4.0:
+    resolution: {integrity: sha512-537WiurDBRbDLVhJMxXLE06D6yWxJCidfPClnibZ0f8dKMDpv+0fIfwCQ8pELE0JqKX05SOJosNJgKzQobaAEA==}
+
+  soundfont2@0.5.0:
+    resolution: {integrity: sha512-dcmNVtHT/Y8BOOrtmjt7hn6Bk6bB1g+O2bWB9fa6emW7kfwiEiEL4VvGQfwVt8g0m58LyoqVyuQ4ZFukMLwGHQ==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -4037,6 +4052,13 @@ snapshots:
   '@strudel/mini@1.2.2':
     dependencies:
       '@strudel/core': 1.2.2
+
+  '@strudel/soundfonts@1.2.3':
+    dependencies:
+      '@strudel/core': 1.2.2
+      '@strudel/webaudio': 1.2.3
+      sfumato: 0.1.2
+      soundfont2: 0.5.0
 
   '@strudel/tonal@1.2.2':
     dependencies:
@@ -6522,6 +6544,10 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
+  sfumato@0.1.2:
+    dependencies:
+      soundfont2: 0.4.0
+
   shebang-command@1.2.0:
     dependencies:
       shebang-regex: 1.0.0
@@ -6598,6 +6624,10 @@ snapshots:
       solid-js: 1.9.7
     transitivePeerDependencies:
       - supports-color
+
+  soundfont2@0.4.0: {}
+
+  soundfont2@0.5.0: {}
 
   source-map-js@1.2.1: {}
 
