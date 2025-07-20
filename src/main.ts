@@ -1,4 +1,11 @@
-import { app, BrowserWindow, dialog, ipcMain, screen } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  globalShortcut,
+  ipcMain,
+  screen,
+} from "electron";
 import started from "electron-squirrel-startup";
 import path from "node:path";
 import { readFileSync, writeFileSync, type WriteFileOptions } from "node:fs";
@@ -77,6 +84,10 @@ app.whenReady().then(() => {
     saveFile(path, content)
   );
   createWindow();
+
+  globalShortcut.register("Alt+.", () => {
+    BrowserWindow.getFocusedWindow()?.webContents.send("request-pause");
+  });
 });
 
 app.on("window-all-closed", () => {
@@ -89,6 +100,10 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
 });
 
 export { openFile, saveFile };

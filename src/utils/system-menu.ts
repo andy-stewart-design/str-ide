@@ -16,7 +16,7 @@ export function createSystemMenu() {
       label: "File",
       submenu: [
         {
-          label: "Open",
+          label: "Open File",
           accelerator: "CmdOrCtrl+O",
           click: async () => {
             const focusedWindow = BrowserWindow.getFocusedWindow();
@@ -29,12 +29,40 @@ export function createSystemMenu() {
           },
         },
         {
-          label: "Save",
+          label: "Save File",
           accelerator: "CmdOrCtrl+S",
           click: async () => {
             const focusedWindow = BrowserWindow.getFocusedWindow();
             if (!focusedWindow) return;
             focusedWindow.webContents.send("request-save");
+          },
+        },
+        {
+          label: "Close File",
+          accelerator: "CmdOrCtrl+W",
+          click: async () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (!focusedWindow) return;
+            focusedWindow.webContents.send("request-close");
+          },
+        },
+      ],
+    },
+    {
+      label: "Audio",
+      submenu: [
+        {
+          label: "Play Audio",
+          accelerator: "Alt+Return",
+          click: async () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send("request-play");
+          },
+        },
+        {
+          label: "Pause Audio",
+          // accelerator: "Alt+.",
+          click: async () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send("request-pause");
           },
         },
       ],
