@@ -1,12 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { FileData } from "@/types/file-data";
 
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === "≥" && e.altKey) {
-    e.preventDefault();
-  }
-}
-
 contextBridge.exposeInMainWorld("electronAPI", {
   openFile: (): Promise<FileData | null> => {
     return ipcRenderer.invoke("open-file-dialog");
@@ -23,18 +17,20 @@ contextBridge.exposeInMainWorld("electronAPI", {
       const result = callback();
       if (!result) return;
       const { path, content } = result;
-      return ipcRenderer.invoke("save-file", path, content);
+      return ipcRenderer.invoke("save-file", null, content);
     });
   },
+  onFileSaved: (callback: (data: any) => void) => {
+    ipcRenderer.on("file-saved", (_, fileData: FileData) => callback(fileData));
+  },
   onRequestClose: (callback: () => void) => {
-    ipcRenderer.on("request-close", () => callback());
+    ipcRenderer.on("request-close", callback);
   },
   onRequestPlay: (callback: () => void) => {
-    ipcRenderer.on("request-play", () => callback());
+    ipcRenderer.on("request-play", callback);
   },
   onRequestPause: (callback: () => void) => {
-    ipcRenderer.on("request-pause", () => callback());
-    window.addEventListener("keydown", handleKeydown);
+    ipcRenderer.on("request-pause", callback);
   },
   removeAllListeners: () => {
     ipcRenderer.removeAllListeners("file-opened");
@@ -42,6 +38,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.removeAllListeners("request-close");
     ipcRenderer.removeAllListeners("request-play");
     ipcRenderer.removeAllListeners("request-pause");
-    window.removeEventListener("keydown", handleKeydown);
   },
 });

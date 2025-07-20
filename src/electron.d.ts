@@ -7,6 +7,7 @@ export interface IElectronAPI {
   onRequestSave: (
     callback: () => { path: FileData["path"]; content: string } | null
   ) => void;
+  onFileSaved: (callback: (data: FileData) => void) => void;
   onRequestClose: (callback: () => void) => void;
   onRequestPlay: (callback: () => void) => void;
   onRequestPause: (callback: () => void) => void;

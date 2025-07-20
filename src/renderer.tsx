@@ -10,6 +10,7 @@ const {
   onFileOpened,
   openFile,
   onRequestSave,
+  onFileSaved,
   onRequestClose,
   onRequestPlay,
   onRequestPause,
@@ -45,6 +46,11 @@ function App() {
     return { path: fileData.path, content };
   });
 
+  onFileSaved((data) => {
+    setFile(data);
+    editor()?.setValue(data.content);
+  });
+
   onRequestClose(() => {
     setFile(null);
     editor()?.setValue("");
@@ -66,7 +72,11 @@ function App() {
 
   return (
     <>
-      <div id="navbar" />
+      <div id="navbar">
+        <p style={{ color: "white", "text-align": "center", margin: 0 }}>
+          {file()?.path ?? "New file"}
+        </p>
+      </div>
       <div id="app" data-editable={Boolean(file())}>
         <div id="editor-container" ref={editorContainer} />
         <div id="editor-fallback" style={{ "z-index": 1 }}>

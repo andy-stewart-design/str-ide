@@ -43,20 +43,36 @@ async function openFile() {
 }
 
 async function saveFile(
-  path: FileData["path"],
+  _path: FileData["path"],
   content: string,
   encoding: WriteFileOptions = "utf-8"
 ) {
   try {
-    if (path) {
-      writeFileSync(path, content, encoding);
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (!focusedWindow) return;
+
+    let newFilePath: string | null = _path;
+    let fileName: string | null = null;
+
+    if (_path) {
+      fileName = path.basename(_path);
+      writeFileSync(_path, content, encoding);
     } else {
       const { filePath, canceled } = await dialog.showSaveDialog({
         defaultPath: "untitled.std",
       });
       if (!canceled) {
         writeFileSync(filePath, content, encoding);
+        newFilePath = filePath;
+        fileName = path.basename(filePath);
       }
+    }
+    if (newFilePath && fileName) {
+      focusedWindow.webContents.send("file-saved", {
+        path: newFilePath,
+        name: fileName,
+        content,
+      });
     }
   } catch (error) {
     console.error("Error saving file:", error);
