@@ -49,9 +49,7 @@ function App() {
     return { path: fileData.path, content };
   });
 
-  onFileSaved((data) => {
-    setFile(data);
-  });
+  onFileSaved(setFile);
 
   onRequestClose(() => {
     const fileContent = file()?.content;
@@ -65,7 +63,7 @@ function App() {
     }
   });
 
-  onCleanup(() => removeAllListeners());
+  onCleanup(removeAllListeners);
 
   onRequestPlay(() => strudel()?.evaluate(editor()?.getValue()));
 
