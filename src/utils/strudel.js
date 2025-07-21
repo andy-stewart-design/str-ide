@@ -42,10 +42,7 @@ async function prebake({ setError }) {
     defaultOutput: webaudioOutput,
     getTime: () => getAudioContext().currentTime,
     transpiler,
-    onEvalError: (err) => {
-      console.log("Setting error!");
-      setError(err);
-    },
+    onEvalError: (refErr) => setError(refErr.message), // refErr: ReferenceError
     afterEval: () => setError(null),
   });
 }

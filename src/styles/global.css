@@ -71,13 +71,21 @@
 
 #error-banner {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  background: black;
-  padding: 1rem 2rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  width: calc(100vw - 1rem * 2);
+  max-width: max-content;
+  background: rgb(200 0 40);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 100vmax;
 
   p {
+    font-size: 0.85rem;
     color: white;
     margin: 0;
   }

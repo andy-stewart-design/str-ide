@@ -112,9 +112,17 @@ function App() {
           <button onclick={handleOpenFile}>Open file</button>
         </div>
         <Show when={error()}>
-          <div id="error-banner">
-            <p>{error()?.toString()}</p>
-          </div>
+          <button id="error-banner" onClick={() => setError(null)}>
+            <p>{error()}</p>
+            <svg viewBox="0 0 16 16" width={16} height={16}>
+              <path
+                d="M 4 4 L 12 12 M 4 12 L 12 4"
+                fill="none"
+                stroke="white"
+                stroke-width={1.5}
+              />
+            </svg>
+          </button>
         </Show>
       </div>
     </>
