@@ -69,6 +69,20 @@
   align-items: center;
 }
 
+#error-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background: black;
+  padding: 1rem 2rem;
+
+  p {
+    color: white;
+    margin: 0;
+  }
+}
+
 button {
   cursor: pointer;
 }

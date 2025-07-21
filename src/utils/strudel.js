@@ -11,7 +11,7 @@ import {
 import * as SoundFonts from "@strudel/soundfonts";
 import { transpiler } from "@strudel/transpiler";
 
-async function prebake() {
+async function prebake({ setError }) {
   initAudioOnFirstClick();
 
   evalScope(
@@ -42,6 +42,11 @@ async function prebake() {
     defaultOutput: webaudioOutput,
     getTime: () => getAudioContext().currentTime,
     transpiler,
+    onEvalError: (err) => {
+      console.log("Setting error!");
+      setError(err);
+    },
+    afterEval: () => setError(null),
   });
 }
 

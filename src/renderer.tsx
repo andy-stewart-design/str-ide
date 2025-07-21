@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { render } from "solid-js/web";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
@@ -25,11 +25,12 @@ function App() {
   const [strudel, setStrudel] = createSignal<any | null>(null);
   const [editor, setEditor] = createSignal<Editor | null>(null);
   const [file, setFile] = createSignal<FileData | null>(null);
+  const [error, setError] = createSignal<string | null>(null);
   let editorContainer: HTMLDivElement | undefined;
 
   onMount(async () => {
     if (!editorContainer) return;
-    const strudel = await prebake();
+    const strudel = await prebake({ setError });
     const monacoEditor = initMonacoEditor(editorContainer);
     setStrudel(strudel);
     setEditor(monacoEditor);
@@ -92,6 +93,11 @@ function App() {
     saveFile(fileData.path, content);
   }
 
+  createEffect(() => {
+    console.log("The error is of type", typeof error());
+    console.log(error()?.toString());
+  });
+
   return (
     <>
       <div id="navbar">
@@ -105,6 +111,11 @@ function App() {
           <button onclick={handleCreateNewFile}>New file</button>
           <button onclick={handleOpenFile}>Open file</button>
         </div>
+        <Show when={error()}>
+          <div id="error-banner">
+            <p>{error()?.toString()}</p>
+          </div>
+        </Show>
       </div>
     </>
   );
