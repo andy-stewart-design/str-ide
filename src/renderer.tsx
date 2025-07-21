@@ -8,14 +8,16 @@ import "@/styles/global.css";
 
 const {
   onRequestNewFile,
-  onFileOpened,
   openFile,
+  onFileOpened,
+  saveFile,
   onRequestSave,
   onFileSaved,
   onRequestClose,
   onRequestPlay,
   onRequestPause,
   removeAllListeners,
+  warnBeforeClosing,
 } = window.electronAPI;
 
 function App() {
@@ -40,18 +42,11 @@ function App() {
     editor()?.setValue(data.content);
   });
 
-  onRequestSave(() => {
-    const fileData = file();
-    const content = editor()?.getValue();
-    if (!fileData || !content) return { path: "", content: "" };
-
-    setFile({ ...fileData, content });
-    return { path: fileData.path, content };
-  });
+  onRequestSave(handleSaveFile);
 
   onFileSaved(setFile);
 
-  onRequestClose(() => {
+  onRequestClose(async () => {
     const fileContent = file()?.content;
     const editorContent = editor()?.getValue();
 
@@ -59,7 +54,14 @@ function App() {
       setFile(null);
       editor()?.setValue("");
     } else {
-      console.log("Add popup to warn about need to save");
+      const response = await warnBeforeClosing();
+
+      if (response === "show_save_dialog") {
+        handleSaveFile();
+      } else if (response === "close_without_saving") {
+        setFile(null);
+        editor()?.setValue("");
+      }
     }
   });
 
@@ -81,6 +83,13 @@ function App() {
       setFile(data);
       editor()?.setValue(data.content);
     }
+  }
+
+  function handleSaveFile() {
+    const fileData = file();
+    const content = editor()?.getValue();
+    if (!fileData || !content) return;
+    saveFile(fileData.path, content);
   }
 
   return (

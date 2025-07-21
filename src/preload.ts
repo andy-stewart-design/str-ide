@@ -13,21 +13,22 @@ contextBridge.exposeInMainWorld("electronAPI", {
       callback(fileData)
     );
   },
-  onRequestSave: (
-    callback: () => { path: FileData["path"]; content: string } | null
-  ) => {
-    ipcRenderer.on("request-save", () => {
-      const result = callback();
-      if (!result) return;
-      const { path, content } = result;
-      return ipcRenderer.invoke("save-file", path, content);
-    });
+  saveFile: (path: FileData["path"], content: string) => {
+    return ipcRenderer.invoke("save-file", path, content);
+  },
+  onRequestSave: (callback: () => void) => {
+    ipcRenderer.on("request-save", callback);
   },
   onFileSaved: (callback: (data: any) => void) => {
     ipcRenderer.on("file-saved", (_, fileData: FileData) => callback(fileData));
   },
   onRequestClose: (callback: () => void) => {
     ipcRenderer.on("request-close", callback);
+  },
+  warnBeforeClosing: (): Promise<
+    "show_save_dialog" | "close_without_saving" | "cancel"
+  > => {
+    return ipcRenderer.invoke("warn-before-closing");
   },
   onRequestPlay: (callback: () => void) => {
     ipcRenderer.on("request-play", callback);

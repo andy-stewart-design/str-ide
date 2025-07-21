@@ -80,6 +80,30 @@ async function saveFile(
   }
 }
 
+async function showSaveBeforeCloseWarning() {
+  const filename = "renderer.tsx";
+  const focusedWindow = BrowserWindow.getFocusedWindow();
+  if (!focusedWindow) return;
+
+  const actions = {
+    Save: "show_save_dialog",
+    "Don't Save": "close_without_saving",
+    Cancel: "cancel",
+  };
+
+  const result = await dialog.showMessageBox(focusedWindow, {
+    type: "warning",
+    buttons: Object.keys(actions),
+    defaultId: 0,
+    cancelId: 2,
+    title: "Unsaved Changes",
+    message: `Do you want to save the changes you made to ${filename}?`,
+    detail: "Your changes will be lost if you don't save them.",
+  });
+
+  return Object.values(actions)[result.response];
+}
+
 const createWindow = () => {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width } = primaryDisplay.workAreaSize;
@@ -107,6 +131,7 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
+  ipcMain.handle("warn-before-closing", showSaveBeforeCloseWarning);
   ipcMain.handle("open-file-dialog", openFile);
   ipcMain.handle("save-file", (_, path: string, content: string) =>
     saveFile(path, content)

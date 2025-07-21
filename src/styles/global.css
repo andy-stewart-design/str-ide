@@ -59,6 +59,10 @@
   }
 }
 
+#editor-container {
+  width: 100vw;
+}
+
 #editor-fallback {
   display: flex;
   justify-content: center;
