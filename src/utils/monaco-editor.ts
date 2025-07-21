@@ -47,6 +47,8 @@ function initMonacoEditor(container: HTMLElement) {
       try {
         const clipboardText = await navigator.clipboard.readText();
         const selection = editor.getSelection();
+        if (!selection) return;
+
         editor.executeEdits("paste", [
           {
             range: selection,
@@ -67,7 +69,9 @@ function initMonacoEditor(container: HTMLElement) {
     run: async (editor) => {
       try {
         const selection = editor.getSelection();
-        const selectedText = editor.getModel().getValueInRange(selection);
+        if (!selection) return;
+        const selectedText = editor.getModel()?.getValueInRange(selection);
+        if (!selectedText) return;
         await navigator.clipboard.writeText(selectedText);
       } catch (err) {
         console.error("Failed to copy:", err);
@@ -82,15 +86,39 @@ function initMonacoEditor(container: HTMLElement) {
     run: async (editor) => {
       try {
         const selection = editor.getSelection();
-        const selectedText = editor.getModel().getValueInRange(selection);
-        await navigator.clipboard.writeText(selectedText);
-        editor.executeEdits("cut", [
-          {
-            range: selection,
-            text: "",
-            forceMoveMarkers: true,
-          },
-        ]);
+        if (!selection) return;
+        let textToCut;
+        let rangeToDelete;
+
+        // Check if there's an actual selection (not just cursor position)
+        if (selection.isEmpty()) {
+          // No selection - cut the entire line
+          const position = editor.getPosition();
+          const lineNumber = position?.lineNumber;
+          const model = editor.getModel();
+          if (!model || !lineNumber) return;
+
+          // Get the full line including line ending
+          textToCut = model.getLineContent(lineNumber) + "\n";
+
+          // Range to delete the entire line (including line break)
+          rangeToDelete = new monaco.Range(lineNumber, 1, lineNumber + 1, 1);
+        } else {
+          // There's a selection - cut the selected text
+          textToCut = editor.getModel()?.getValueInRange(selection);
+          rangeToDelete = selection;
+        }
+
+        if (textToCut) {
+          await navigator.clipboard.writeText(textToCut);
+          editor.executeEdits("cut", [
+            {
+              range: rangeToDelete,
+              text: "",
+              forceMoveMarkers: true,
+            },
+          ]);
+        }
       } catch (err) {
         console.error("Failed to cut:", err);
       }

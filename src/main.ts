@@ -118,6 +118,7 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
+    backgroundColor: "#011627",
   });
 
   createSystemMenu();
