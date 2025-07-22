@@ -119,9 +119,6 @@ function App() {
 
     const content = editor.getValue();
     saveFile(data.path, content);
-    const currentTabs = tabs();
-    currentTabs[data.id].content = content;
-    setTabs({ ...currentTabs });
   }
 
   async function handleClose(_id?: string) {
