@@ -7,12 +7,14 @@ import {
   registerZZFXSounds,
   samples,
   aliasBank,
+  soundMap,
 } from "@strudel/webaudio";
 import * as SoundFonts from "@strudel/soundfonts";
 import { transpiler } from "@strudel/transpiler";
 
 async function prebake({ setError }) {
   initAudioOnFirstClick();
+  addAliases();
 
   evalScope(
     import("@strudel/core"),
@@ -45,6 +47,22 @@ async function prebake({ setError }) {
     onEvalError: (refErr) => setError(refErr.message), // refErr: ReferenceError
     afterEval: () => setError(null),
   });
+}
+
+function addAliases() {
+  const waveformAliases = [
+    ["tri", "triangle"],
+    ["sqr", "square"],
+    ["saw", "sawtooth"],
+    ["sin", "sine"],
+  ];
+
+  waveformAliases.forEach(([alias, actual]) =>
+    soundMap.set({
+      ...soundMap.get(),
+      [alias]: soundMap.value[actual.toString()],
+    })
+  );
 }
 
 export { prebake };
