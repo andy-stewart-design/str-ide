@@ -37,13 +37,11 @@ const {
 function App() {
   // const [playing, setPlaying] = createSignal(false);
   const [strudel, setStrudel] = createSignal<any | null>(null);
-  const [editor, setEditor] = createSignal<Editor | null>(null);
-  const [file, setFile] = createSignal<FileData | null>(null);
-
-  const [tabs, setTabs] = createSignal<TabGroup | null>(null);
+  const [tabs, setTabs] = createSignal<TabGroup>({});
   const [activeTab, setActiveTab] = createSignal<string | null>(null);
-  const [editors, setEditors] = createSignal<EditorGroup | null>(null);
+  const [editors, setEditors] = createSignal<EditorGroup>({});
   const [error, setError] = createSignal<string | null>(null);
+  const tabsArray = () => Object.values(tabs());
 
   onMount(async () => {
     const strudel = await prebake({ setError });
@@ -56,91 +54,125 @@ function App() {
     const id = crypto.randomUUID();
     const currentTabs = tabs() ?? {};
     setTabs({ ...currentTabs, [id]: { id, ...data } });
-    editor()?.setValue(data.content);
+    setActiveTab(id);
   });
 
   onRequestSave(handleSaveFile);
 
-  onFileSaved(setFile);
+  // TODO: Figure out if this is necessary
+  onFileSaved((data) => {
+    const id = activeTab() ?? "";
+    const editor = editors()?.[id];
+    if (!data || !editor) return;
+    const content = editor.getValue();
+    const currentTabs = tabs();
+    currentTabs[id].content = content;
+    setTabs({ ...currentTabs });
+  });
 
   onRequestClose(async () => {
-    const fileContent = file()?.content;
-    const editorContent = editor()?.getValue();
+    const id = activeTab() ?? "";
+    const fileContent = tabs()?.[activeTab() ?? ""]?.content;
+    const editorContent = editors()?.[id]?.getValue();
+    console.log({ id, editorContent, fileContent });
+
+    if (
+      !id ||
+      typeof fileContent !== "string" ||
+      typeof editorContent !== "string"
+    )
+      return;
 
     if (fileContent === editorContent) {
-      setFile(null);
-      editor()?.setValue("");
+      const currentTabs = tabs();
+      const currentEditors = editors();
+      delete currentTabs[id];
+      delete currentEditors[id];
+      setTabs({ ...currentTabs });
+      setEditors({ ...currentEditors });
+      if (tabsArray.length <= 1) setActiveTab(null);
     } else {
       const response = await warnBeforeClosing();
-
       if (response === "show_save_dialog") {
         handleSaveFile();
       } else if (response === "close_without_saving") {
-        setFile(null);
-        editor()?.setValue("");
+        const currentTabs = tabs();
+        const currentEditors = editors();
+        delete currentTabs[id];
+        delete currentEditors[id];
+        setTabs({ ...currentTabs });
+        setEditors({ ...currentEditors });
+        if (tabsArray.length <= 1) setActiveTab(null);
       }
     }
   });
 
   onCleanup(removeAllListeners);
 
-  onRequestPlay(() => strudel()?.evaluate(editor()?.getValue()));
+  onRequestPlay(() => {
+    const editor = editors()[activeTab() ?? ""];
+    if (editor) strudel()?.evaluate(editor.getValue());
+  });
 
   onRequestPause(() => strudel()?.stop());
 
   function handleInitEditor(el: HTMLDivElement, tab: TabData) {
     const newEditor = initMonacoEditor(el);
-    newEditor.setValue(tab.content);
-    newEditor.focus();
-
-    const currentEditors = editors() ?? {};
+    const currentEditors = editors();
     setEditors({ ...currentEditors, [tab.id]: newEditor });
+
+    newEditor.setValue(tab.content);
+    requestAnimationFrame(() => newEditor.focus());
   }
 
   function handleCreateNewFile() {
     const id = crypto.randomUUID();
-    const currentTabs = tabs() ?? {};
+    const currentTabs = tabs();
     const newTab = { id, path: null, name: null, content: "" };
     setTabs({ ...currentTabs, [id]: newTab });
+    setActiveTab(id);
   }
 
   async function handleOpenFile() {
     const data = await openFile();
     if (data) {
       const id = crypto.randomUUID();
-      const currentTabs = tabs() ?? {};
+      const currentTabs = tabs();
       setTabs({ ...currentTabs, [id]: { id, ...data } });
+      setActiveTab(id);
     }
   }
 
   function handleSaveFile() {
-    const fileData = file();
-    // const content = editor()?.getValue();
-    // if (!fileData || !content) return;
-    // saveFile(fileData.path, content);
-  }
+    const data = tabs()?.[activeTab() ?? ""];
+    const editor = editors()?.[data?.id ?? ""];
+    if (!data || !editor) return;
 
-  createEffect(() => {
-    console.log("The error is of type", typeof error());
-    console.log(error()?.toString());
-  });
+    const content = editor.getValue();
+    saveFile(data.path, content);
+    const currentTabs = tabs();
+    currentTabs[data.id].content = content;
+    setTabs({ ...currentTabs });
+  }
 
   return (
     <>
       <div id="navbar">
-        <Show when={file()}>
-          <p>{file()?.path ?? "untitled"}</p>
+        <Show when={activeTab()}>
+          <p>{tabs()[activeTab() ?? ""]?.path ?? "untitled"}</p>
         </Show>
       </div>
-      <div id="app" data-editable={Boolean(file())}>
-        <For each={Object.values(tabs() ?? {})}>
-          {(tab) => (
-            <div
-              id="editor-container"
-              ref={(el) => handleInitEditor(el, tab)}
-            />
-          )}
-        </For>
+      <div id="app" data-editable={Boolean(tabsArray().length)}>
+        <Show when={tabsArray().length}>
+          <For each={tabsArray()}>
+            {(tab) => (
+              <div
+                id="editor-container"
+                ref={(el) => handleInitEditor(el, tab)}
+              />
+            )}
+          </For>
+        </Show>
         <div id="editor-fallback" style={{ "z-index": 1 }}>
           <button onclick={handleCreateNewFile}>New file</button>
           <button onclick={handleOpenFile}>Open file</button>
