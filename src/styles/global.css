@@ -13,7 +13,8 @@
 
 #root {
   display: grid;
-  grid-template-rows: 32px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 32px 40px minmax(0, 1fr);
   height: 100%;
 }
 
@@ -30,9 +31,26 @@
   }
 }
 
+#tab-bar {
+  display: flex;
+
+  button {
+    color: white;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+
+    &[data-active="false"] {
+      opacity: 0.5;
+    }
+  }
+}
+
 #app {
   display: grid;
   height: 100%;
+  /* border: 2px solid red; */
+  /* width: 100vw; */
 
   & > * {
     grid-area: -1 / 1;
@@ -61,6 +79,12 @@
 
 #editor-container {
   width: 100vw;
+  height: calc(100vh - 72px);
+
+  &[data-active="false"] {
+    visibility: hidden;
+    z-index: -1;
+  }
 }
 
 #editor-fallback {

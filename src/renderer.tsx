@@ -69,30 +69,26 @@ function App() {
     const editor = editors()[id];
     if (!id || !tab || !editor) return;
 
-    if (tab.content === editor.getValue()) {
+    function destroy() {
       const currentTabs = tabs();
       const currentEditors = editors();
       delete currentTabs[id];
       delete currentEditors[id];
+      editor.dispose();
       setTabs({ ...currentTabs });
       setEditors({ ...currentEditors });
-      editor.dispose();
       if (tabsArray().length === 0) setActiveTab("");
       else setActiveTab(tabsArray()[0].id);
+    }
+
+    if (tab.content === editor.getValue()) {
+      destroy();
     } else {
       const response = await warnBeforeClosing();
       if (response === "show_save_dialog") {
         handleSaveFile();
       } else if (response === "close_without_saving") {
-        const currentTabs = tabs();
-        const currentEditors = editors();
-        delete currentTabs[id];
-        delete currentEditors[id];
-        setTabs({ ...currentTabs });
-        setEditors({ ...currentEditors });
-        editor.dispose();
-        if (tabsArray().length === 0) setActiveTab("");
-        else setActiveTab(tabsArray()[0].id);
+        destroy();
       }
     }
   });
@@ -152,21 +148,40 @@ function App() {
           <p>{tabs()[activeTab()]?.path ?? "untitled"}</p>
         </Show>
       </div>
-      <div id="app" data-editable={Boolean(tabsArray().length)}>
+      <div id="tab-bar">
         <Show when={tabsArray().length}>
+          <For each={tabsArray()}>
+            {({ name, id }) => (
+              <button
+                onClick={() => setActiveTab(id)}
+                data-active={activeTab() === id}
+              >
+                {name ?? "new file"}
+              </button>
+            )}
+          </For>
+        </Show>
+      </div>
+      <div id="app" data-editable={Boolean(tabsArray().length)}>
+        <Show
+          when={tabsArray().length}
+          fallback={
+            <EditorFallback
+              onCreateNewFile={handleCreateNewFile}
+              onOpenFile={handleOpenFile}
+            />
+          }
+        >
           <For each={tabsArray()}>
             {(tab) => (
               <div
                 id="editor-container"
                 ref={(el) => handleInitEditor(el, tab)}
+                data-active={activeTab() === tab.id}
               />
             )}
           </For>
         </Show>
-        <div id="editor-fallback" style={{ "z-index": 1 }}>
-          <button onclick={handleCreateNewFile}>New file</button>
-          <button onclick={handleOpenFile}>Open file</button>
-        </div>
         <Show when={error()}>
           <button id="error-banner" onClick={() => setError(null)}>
             <p>{error()}</p>
@@ -191,4 +206,19 @@ if (root) {
   render(() => <App />, root);
 } else {
   console.error("[renderer.ts]: Could not find root element in index.html.");
+}
+
+function EditorFallback({
+  onCreateNewFile,
+  onOpenFile,
+}: {
+  onCreateNewFile: () => void;
+  onOpenFile: () => Promise<void>;
+}) {
+  return (
+    <div id="editor-fallback" style={{ "z-index": 1 }}>
+      <button onclick={onCreateNewFile}>New file</button>
+      <button onclick={onOpenFile}>Open file</button>
+    </div>
+  );
 }
