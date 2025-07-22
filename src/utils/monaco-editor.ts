@@ -31,6 +31,7 @@ function initMonacoEditor(container: HTMLElement) {
       enabled: false,
     },
     fontSize: 14,
+    padding: { top: 16 },
     automaticLayout: true,
   });
 
