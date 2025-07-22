@@ -1,11 +1,4 @@
-import {
-  createEffect,
-  createSignal,
-  onCleanup,
-  onMount,
-  Show,
-  For,
-} from "solid-js";
+import { createSignal, onCleanup, onMount, Show, For } from "solid-js";
 import { render } from "solid-js/web";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
@@ -73,23 +66,18 @@ function App() {
   onRequestClose(async () => {
     const id = activeTab() ?? "";
     const fileContent = tabs()?.[activeTab() ?? ""]?.content;
-    const editorContent = editors()?.[id]?.getValue();
-    console.log({ id, editorContent, fileContent });
+    const editor = editors()[id];
 
-    if (
-      !id ||
-      typeof fileContent !== "string" ||
-      typeof editorContent !== "string"
-    )
-      return;
+    if (!id || typeof fileContent !== "string" || !editor) return;
 
-    if (fileContent === editorContent) {
+    if (fileContent === editor.getValue()) {
       const currentTabs = tabs();
       const currentEditors = editors();
       delete currentTabs[id];
       delete currentEditors[id];
       setTabs({ ...currentTabs });
       setEditors({ ...currentEditors });
+      editor.dispose();
       if (tabsArray.length <= 1) setActiveTab(null);
     } else {
       const response = await warnBeforeClosing();
@@ -102,6 +90,7 @@ function App() {
         delete currentEditors[id];
         setTabs({ ...currentTabs });
         setEditors({ ...currentEditors });
+        editor.dispose();
         if (tabsArray.length <= 1) setActiveTab(null);
       }
     }
