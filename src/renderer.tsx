@@ -26,14 +26,10 @@ function App() {
   const [editor, setEditor] = createSignal<Editor | null>(null);
   const [file, setFile] = createSignal<FileData | null>(null);
   const [error, setError] = createSignal<string | null>(null);
-  let editorContainer: HTMLDivElement | undefined;
 
   onMount(async () => {
-    if (!editorContainer) return;
     const strudel = await prebake({ setError });
-    const monacoEditor = initMonacoEditor(editorContainer);
     setStrudel(strudel);
-    setEditor(monacoEditor);
   });
 
   onRequestNewFile(handleCreateNewFile);
@@ -72,6 +68,11 @@ function App() {
 
   onRequestPause(() => strudel()?.stop());
 
+  function handleInitEditor(el: HTMLDivElement) {
+    const editor = initMonacoEditor(el);
+    setEditor(editor);
+  }
+
   function handleCreateNewFile() {
     setFile({ path: null, name: null, content: "" });
     editor()?.setValue("");
@@ -106,7 +107,7 @@ function App() {
         </Show>
       </div>
       <div id="app" data-editable={Boolean(file())}>
-        <div id="editor-container" ref={editorContainer} />
+        <div id="editor-container" ref={handleInitEditor} />
         <div id="editor-fallback" style={{ "z-index": 1 }}>
           <button onclick={handleCreateNewFile}>New file</button>
           <button onclick={handleOpenFile}>Open file</button>
