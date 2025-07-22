@@ -63,41 +63,16 @@ function App() {
     setTabs({ ...currentTabs });
   });
 
-  onRequestClose(async () => {
-    const id = activeTab();
-    const tab = tabs()[id];
-    const editor = editors()[id];
-    if (!id || !tab || !editor) return;
+  onRequestClose(handleClose);
 
-    function destroy() {
-      const currentTabs = tabs();
-      const currentEditors = editors();
-      delete currentTabs[id];
-      delete currentEditors[id];
-      editor.dispose();
-      setTabs({ ...currentTabs });
-      setEditors({ ...currentEditors });
-      if (tabsArray().length === 0) setActiveTab("");
-      else setActiveTab(tabsArray()[0].id);
-    }
-
-    if (tab.content === editor.getValue()) {
-      destroy();
-    } else {
-      const response = await warnBeforeClosing();
-      if (response === "show_save_dialog") {
-        handleSaveFile();
-      } else if (response === "close_without_saving") {
-        destroy();
-      }
-    }
+  onCleanup(() => {
+    removeAllListeners();
+    Object.values(editors()).forEach((ed) => ed.dispose());
   });
 
-  onCleanup(removeAllListeners);
-
   onRequestPlay(() => {
-    const editor = editors()[activeTab()];
-    if (editor) strudel()?.evaluate(editor.getValue());
+    const content = editors()[activeTab()]?.getValue();
+    if (content) strudel()?.evaluate(content);
   });
 
   onRequestPause(() => strudel()?.stop());
@@ -141,6 +116,36 @@ function App() {
     setTabs({ ...currentTabs });
   }
 
+  async function handleClose(_id?: string) {
+    const id = _id ?? activeTab();
+    const tab = tabs()[id];
+    const editor = editors()[id];
+    if (!id || !tab || !editor) return;
+
+    function destroy() {
+      const currentTabs = tabs();
+      const currentEditors = editors();
+      delete currentTabs[id];
+      delete currentEditors[id];
+      editor.dispose();
+      setTabs({ ...currentTabs });
+      setEditors({ ...currentEditors });
+      if (tabsArray().length === 0) setActiveTab("");
+      else setActiveTab(tabsArray()[0].id);
+    }
+
+    if (tab.content === editor.getValue()) {
+      destroy();
+    } else {
+      const response = await warnBeforeClosing();
+      if (response === "show_save_dialog") {
+        handleSaveFile();
+      } else if (response === "close_without_saving") {
+        destroy();
+      }
+    }
+  }
+
   return (
     <>
       <div id="navbar">
@@ -152,12 +157,29 @@ function App() {
         <Show when={tabsArray().length}>
           <For each={tabsArray()}>
             {({ name, id }) => (
-              <button
-                onClick={() => setActiveTab(id)}
-                data-active={activeTab() === id}
-              >
-                {name ?? "new file"}
-              </button>
+              <div class="tab">
+                <button
+                  class="primary-action"
+                  onClick={() => setActiveTab(id)}
+                  data-active={activeTab() === id}
+                >
+                  {name ?? "new file"}
+                </button>
+                <button
+                  class="secondary-action"
+                  onClick={() => handleClose(id)}
+                  data-active={activeTab() === id}
+                >
+                  <svg viewBox="0 0 16 16" width={16} height={16}>
+                    <path
+                      d="M 4 4 L 12 12 M 4 12 L 12 4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width={1.5}
+                    />
+                  </svg>
+                </button>
+              </div>
             )}
           </For>
         </Show>
@@ -189,7 +211,7 @@ function App() {
               <path
                 d="M 4 4 L 12 12 M 4 12 L 12 4"
                 fill="none"
-                stroke="white"
+                stroke="currentColor"
                 stroke-width={1.5}
               />
             </svg>

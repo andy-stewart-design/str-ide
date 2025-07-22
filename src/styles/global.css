@@ -1,5 +1,7 @@
 :is(*, *::before, *::after) {
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 :is(html, body) {
@@ -31,7 +33,7 @@
 
   p {
     color: rgb(255 255 255 / 0.4);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     margin: 0;
   }
 }
@@ -40,21 +42,42 @@
   --text-opacity: 1;
   display: flex;
   border-block-end: 1px solid transparent;
+  isolation: isolate;
 
   &[data-visible="true"] {
     border-block-end: 1px solid var(--border-color);
   }
 
-  button {
-    color: rgb(255 255 255 / var(--text-opacity));
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 0 1rem;
+  .tab {
+    position: relative;
+    display: grid;
     border-inline-end: 1px solid rgb(255 255 255 / 0.15);
 
-    &[data-active="false"] {
-      --text-opacity: 0.5;
+    button {
+      color: rgb(255 255 255 / var(--text-opacity));
+      background: transparent;
+      border: none;
+      border-radius: 0;
+
+      &[data-active="false"] {
+        --text-opacity: 0.5;
+      }
+    }
+
+    button.primary-action {
+      padding: 0 2rem 0 1rem;
+    }
+
+    button.secondary-action {
+      position: absolute;
+      top: 50%;
+      right: 0.75rem;
+      translate: 0 -50%;
+      padding: 0;
+
+      svg {
+        vertical-align: bottom;
+      }
     }
   }
 }
