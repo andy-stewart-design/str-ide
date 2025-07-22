@@ -1,10 +1,24 @@
-import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+  For,
+} from "solid-js";
 import { render } from "solid-js/web";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
 import type { FileData } from "@/types/file-data";
 import type { Editor } from "@/types/monaco";
 import "@/styles/global.css";
+
+interface TabData extends FileData {
+  id: string;
+}
+
+type TabGroup = Record<string, TabData>;
+type EditorGroup = Record<string, Editor>;
 
 const {
   onRequestNewFile,
@@ -25,6 +39,10 @@ function App() {
   const [strudel, setStrudel] = createSignal<any | null>(null);
   const [editor, setEditor] = createSignal<Editor | null>(null);
   const [file, setFile] = createSignal<FileData | null>(null);
+
+  const [tabs, setTabs] = createSignal<TabGroup | null>(null);
+  const [activeTab, setActiveTab] = createSignal<string | null>(null);
+  const [editors, setEditors] = createSignal<EditorGroup | null>(null);
   const [error, setError] = createSignal<string | null>(null);
 
   onMount(async () => {
@@ -35,7 +53,9 @@ function App() {
   onRequestNewFile(handleCreateNewFile);
 
   onFileOpened((data) => {
-    setFile(data);
+    const id = crypto.randomUUID();
+    const currentTabs = tabs() ?? {};
+    setTabs({ ...currentTabs, [id]: { id, ...data } });
     editor()?.setValue(data.content);
   });
 
@@ -68,30 +88,36 @@ function App() {
 
   onRequestPause(() => strudel()?.stop());
 
-  function handleInitEditor(el: HTMLDivElement) {
-    const editor = initMonacoEditor(el);
-    setEditor(editor);
+  function handleInitEditor(el: HTMLDivElement, tab: TabData) {
+    const newEditor = initMonacoEditor(el);
+    newEditor.setValue(tab.content);
+    newEditor.focus();
+
+    const currentEditors = editors() ?? {};
+    setEditors({ ...currentEditors, [tab.id]: newEditor });
   }
 
   function handleCreateNewFile() {
-    setFile({ path: null, name: null, content: "" });
-    editor()?.setValue("");
-    editor()?.focus();
+    const id = crypto.randomUUID();
+    const currentTabs = tabs() ?? {};
+    const newTab = { id, path: null, name: null, content: "" };
+    setTabs({ ...currentTabs, [id]: newTab });
   }
 
   async function handleOpenFile() {
     const data = await openFile();
     if (data) {
-      setFile(data);
-      editor()?.setValue(data.content);
+      const id = crypto.randomUUID();
+      const currentTabs = tabs() ?? {};
+      setTabs({ ...currentTabs, [id]: { id, ...data } });
     }
   }
 
   function handleSaveFile() {
     const fileData = file();
-    const content = editor()?.getValue();
-    if (!fileData || !content) return;
-    saveFile(fileData.path, content);
+    // const content = editor()?.getValue();
+    // if (!fileData || !content) return;
+    // saveFile(fileData.path, content);
   }
 
   createEffect(() => {
@@ -107,7 +133,14 @@ function App() {
         </Show>
       </div>
       <div id="app" data-editable={Boolean(file())}>
-        <div id="editor-container" ref={handleInitEditor} />
+        <For each={Object.values(tabs() ?? {})}>
+          {(tab) => (
+            <div
+              id="editor-container"
+              ref={(el) => handleInitEditor(el, tab)}
+            />
+          )}
+        </For>
         <div id="editor-fallback" style={{ "z-index": 1 }}>
           <button onclick={handleCreateNewFile}>New file</button>
           <button onclick={handleOpenFile}>Open file</button>
