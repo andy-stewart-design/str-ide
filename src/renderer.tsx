@@ -31,7 +31,7 @@ function App() {
   // const [playing, setPlaying] = createSignal(false);
   const [strudel, setStrudel] = createSignal<any | null>(null);
   const [tabs, setTabs] = createSignal<TabGroup>({});
-  const [activeTab, setActiveTab] = createSignal<string | null>(null);
+  const [activeTab, setActiveTab] = createSignal<string>("");
   const [editors, setEditors] = createSignal<EditorGroup>({});
   const [error, setError] = createSignal<string | null>(null);
   const tabsArray = () => Object.values(tabs());
@@ -45,7 +45,7 @@ function App() {
 
   onFileOpened((data) => {
     const id = crypto.randomUUID();
-    const currentTabs = tabs() ?? {};
+    const currentTabs = tabs();
     setTabs({ ...currentTabs, [id]: { id, ...data } });
     setActiveTab(id);
   });
@@ -54,8 +54,8 @@ function App() {
 
   // TODO: Figure out if this is necessary
   onFileSaved((data) => {
-    const id = activeTab() ?? "";
-    const editor = editors()?.[id];
+    const id = activeTab();
+    const editor = editors()[id];
     if (!data || !editor) return;
     const content = editor.getValue();
     const currentTabs = tabs();
@@ -64,13 +64,13 @@ function App() {
   });
 
   onRequestClose(async () => {
-    const id = activeTab() ?? "";
-    const fileContent = tabs()?.[activeTab() ?? ""]?.content;
+    const id = activeTab();
+    const tab = tabs()[id];
     const editor = editors()[id];
 
-    if (!id || typeof fileContent !== "string" || !editor) return;
+    if (!id || !tab || !editor) return;
 
-    if (fileContent === editor.getValue()) {
+    if (tab.content === editor.getValue()) {
       const currentTabs = tabs();
       const currentEditors = editors();
       delete currentTabs[id];
@@ -78,7 +78,7 @@ function App() {
       setTabs({ ...currentTabs });
       setEditors({ ...currentEditors });
       editor.dispose();
-      if (tabsArray.length <= 1) setActiveTab(null);
+      if (tabsArray.length <= 1) setActiveTab("");
     } else {
       const response = await warnBeforeClosing();
       if (response === "show_save_dialog") {
@@ -91,7 +91,7 @@ function App() {
         setTabs({ ...currentTabs });
         setEditors({ ...currentEditors });
         editor.dispose();
-        if (tabsArray.length <= 1) setActiveTab(null);
+        if (tabsArray.length <= 1) setActiveTab("");
       }
     }
   });
@@ -99,7 +99,7 @@ function App() {
   onCleanup(removeAllListeners);
 
   onRequestPlay(() => {
-    const editor = editors()[activeTab() ?? ""];
+    const editor = editors()[activeTab()];
     if (editor) strudel()?.evaluate(editor.getValue());
   });
 
@@ -133,7 +133,7 @@ function App() {
   }
 
   function handleSaveFile() {
-    const data = tabs()?.[activeTab() ?? ""];
+    const data = tabs()?.[activeTab()];
     const editor = editors()?.[data?.id ?? ""];
     if (!data || !editor) return;
 
@@ -148,7 +148,7 @@ function App() {
     <>
       <div id="navbar">
         <Show when={activeTab()}>
-          <p>{tabs()[activeTab() ?? ""]?.path ?? "untitled"}</p>
+          <p>{tabs()[activeTab()]?.path ?? "untitled"}</p>
         </Show>
       </div>
       <div id="app" data-editable={Boolean(tabsArray().length)}>
