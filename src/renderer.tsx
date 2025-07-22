@@ -67,7 +67,6 @@ function App() {
     const id = activeTab();
     const tab = tabs()[id];
     const editor = editors()[id];
-
     if (!id || !tab || !editor) return;
 
     if (tab.content === editor.getValue()) {
@@ -78,7 +77,8 @@ function App() {
       setTabs({ ...currentTabs });
       setEditors({ ...currentEditors });
       editor.dispose();
-      if (tabsArray.length <= 1) setActiveTab("");
+      if (tabsArray().length === 0) setActiveTab("");
+      else setActiveTab(tabsArray()[0].id);
     } else {
       const response = await warnBeforeClosing();
       if (response === "show_save_dialog") {
@@ -91,7 +91,8 @@ function App() {
         setTabs({ ...currentTabs });
         setEditors({ ...currentEditors });
         editor.dispose();
-        if (tabsArray.length <= 1) setActiveTab("");
+        if (tabsArray().length === 0) setActiveTab("");
+        else setActiveTab(tabsArray()[0].id);
       }
     }
   });
