@@ -16,7 +16,7 @@
 #root {
   --nav-height: 32px;
   --tab-bar-height: 44px;
-  --border-color: rgb(255 255 255 / 0.15);
+  --border-color: rgb(255 255 255 / 0.1);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -40,12 +40,13 @@
 
 #tab-bar {
   --text-opacity: 1;
+
   display: flex;
   border-block-end: 1px solid transparent;
   isolation: isolate;
 
   &[data-visible="true"] {
-    background: rgb(0 0 0 / 0.375);
+    background: #010e17;
     border-block-end: 1px solid var(--border-color);
   }
 

@@ -61,10 +61,8 @@ function App() {
 
   // TODO: Figure out if this is necessary
   onFileSaved((data) => {
-    const id = activeTab();
-    console.log(data, tabs()[id]);
     if (!data) return;
-
+    const id = activeTab();
     const currentTabs = tabs();
     currentTabs[id].content = data.content;
     currentTabs[id].name = data.name;
@@ -156,8 +154,6 @@ function App() {
       }
     }
   }
-
-  createEffect(() => tabsArray());
 
   return (
     <>
