@@ -148,7 +148,7 @@ function App() {
           <p>{tabs()[activeTab()]?.path ?? "untitled"}</p>
         </Show>
       </div>
-      <div id="tab-bar">
+      <div id="tab-bar" data-visible={!!tabsArray().length}>
         <Show when={tabsArray().length}>
           <For each={tabsArray()}>
             {({ name, id }) => (

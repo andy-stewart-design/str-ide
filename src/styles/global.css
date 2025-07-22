@@ -12,9 +12,13 @@
 }
 
 #root {
+  --nav-height: 32px;
+  --tab-bar-height: 44px;
+  --border-color: rgb(255 255 255 / 0.15);
+
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 32px 40px minmax(0, 1fr);
+  grid-template-rows: var(--nav-height) var(--tab-bar-height) minmax(0, 1fr);
   height: 100%;
 }
 
@@ -22,6 +26,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  border-block-end: 1px solid var(--border-color);
   app-region: drag;
 
   p {
@@ -32,16 +37,24 @@
 }
 
 #tab-bar {
+  --text-opacity: 1;
   display: flex;
+  border-block-end: 1px solid transparent;
+
+  &[data-visible="true"] {
+    border-block-end: 1px solid var(--border-color);
+  }
 
   button {
-    color: white;
+    color: rgb(255 255 255 / var(--text-opacity));
     background: transparent;
     border: none;
     border-radius: 0;
+    padding: 0 1rem;
+    border-inline-end: 1px solid rgb(255 255 255 / 0.15);
 
     &[data-active="false"] {
-      opacity: 0.5;
+      --text-opacity: 0.5;
     }
   }
 }
@@ -79,7 +92,7 @@
 
 #editor-container {
   width: 100vw;
-  height: calc(100vh - 72px);
+  height: calc(100vh - var(--nav-height) - var(--tab-bar-height));
 
   &[data-active="false"] {
     visibility: hidden;
