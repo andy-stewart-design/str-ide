@@ -45,6 +45,7 @@
   isolation: isolate;
 
   &[data-visible="true"] {
+    background: rgb(0 0 0 / 0.375);
     border-block-end: 1px solid var(--border-color);
   }
 
@@ -59,8 +60,12 @@
       border: none;
       border-radius: 0;
 
+      &[data-active="true"] {
+        background: #011627;
+      }
+
       &[data-active="false"] {
-        --text-opacity: 0.5;
+        --text-opacity: 0.4;
       }
     }
 

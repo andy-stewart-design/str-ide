@@ -1,4 +1,11 @@
-import { createSignal, onCleanup, onMount, Show, For } from "solid-js";
+import {
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+  For,
+  createEffect,
+} from "solid-js";
 import { render } from "solid-js/web";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
@@ -55,15 +62,18 @@ function App() {
   // TODO: Figure out if this is necessary
   onFileSaved((data) => {
     const id = activeTab();
-    const editor = editors()[id];
-    if (!data || !editor) return;
-    const content = editor.getValue();
+    console.log(data, tabs()[id]);
+    if (!data) return;
+
     const currentTabs = tabs();
-    currentTabs[id].content = content;
+    currentTabs[id].content = data.content;
+    currentTabs[id].name = data.name;
+    currentTabs[id].path = data.path;
     setTabs({ ...currentTabs });
+    console.log(tabsArray());
   });
 
-  onRequestClose(handleClose);
+  onRequestClose(() => handleClose());
 
   onCleanup(() => {
     removeAllListeners();
@@ -140,11 +150,14 @@ function App() {
       const response = await warnBeforeClosing();
       if (response === "show_save_dialog") {
         handleSaveFile();
+        requestAnimationFrame(() => destroy());
       } else if (response === "close_without_saving") {
         destroy();
       }
     }
   }
+
+  createEffect(() => tabsArray());
 
   return (
     <>
@@ -155,33 +168,31 @@ function App() {
       </div>
       <div id="tab-bar" data-visible={!!tabsArray().length}>
         <Show when={tabsArray().length}>
-          <For each={tabsArray()}>
-            {({ name, id }) => (
-              <div class="tab">
-                <button
-                  class="primary-action"
-                  onClick={() => setActiveTab(id)}
-                  data-active={activeTab() === id}
-                >
-                  {name ?? "new file"}
-                </button>
-                <button
-                  class="secondary-action"
-                  onClick={() => handleClose(id)}
-                  data-active={activeTab() === id}
-                >
-                  <svg viewBox="0 0 16 16" width={16} height={16}>
-                    <path
-                      d="M 4 4 L 12 12 M 4 12 L 12 4"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width={1.5}
-                    />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </For>
+          {tabsArray().map((tab) => (
+            <div class="tab">
+              <button
+                class="primary-action"
+                onClick={() => setActiveTab(tab.id)}
+                data-active={activeTab() === tab.id}
+              >
+                {tab.name ?? "new file"}
+              </button>
+              <button
+                class="secondary-action"
+                onClick={() => handleClose(tab.id)}
+                data-active={activeTab() === tab.id}
+              >
+                <svg viewBox="0 0 16 16" width={16} height={16}>
+                  <path
+                    d="M 4 4 L 12 12 M 4 12 L 12 4"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width={1.5}
+                  />
+                </svg>
+              </button>
+            </div>
+          ))}
         </Show>
       </div>
       <div id="app" data-editable={Boolean(tabsArray().length)}>
