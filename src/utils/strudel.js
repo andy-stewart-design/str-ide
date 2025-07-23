@@ -14,7 +14,6 @@ import { transpiler } from "@strudel/transpiler";
 
 async function prebake({ setError }) {
   initAudioOnFirstClick();
-  addAliases();
 
   evalScope(
     import("@strudel/core"),
@@ -39,6 +38,7 @@ async function prebake({ setError }) {
     samples(`${ds}/mridangam.json`),
   ]);
   aliasBank(`${ts}/tidal-drum-machines-alias.json`);
+  addSynthAliases();
 
   return repl({
     defaultOutput: webaudioOutput,
@@ -49,7 +49,9 @@ async function prebake({ setError }) {
   });
 }
 
-function addAliases() {
+export { prebake };
+
+function addSynthAliases() {
   const waveformAliases = [
     ["tri", "triangle"],
     ["sqr", "square"],
@@ -64,5 +66,3 @@ function addAliases() {
     })
   );
 }
-
-export { prebake };

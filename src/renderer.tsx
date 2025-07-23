@@ -1,11 +1,4 @@
-import {
-  createSignal,
-  onCleanup,
-  onMount,
-  Show,
-  For,
-  createEffect,
-} from "solid-js";
+import { createSignal, onCleanup, onMount, Show, For } from "solid-js";
 import { render } from "solid-js/web";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
@@ -35,10 +28,11 @@ const {
 } = window.electronAPI;
 
 function App() {
-  // const [playing, setPlaying] = createSignal(false);
+  const [playing, setPlaying] = createSignal(false);
   const [strudel, setStrudel] = createSignal<any | null>(null);
   const [tabs, setTabs] = createSignal<TabGroup>({});
-  const [activeTab, setActiveTab] = createSignal<string>("");
+  const [activeId, setActiveId] = createSignal<string>("");
+  const [playingId, setPlayingId] = createSignal<string>("");
   const [editors, setEditors] = createSignal<EditorGroup>({});
   const [error, setError] = createSignal<string | null>(null);
   const tabsArray = () => Object.values(tabs());
@@ -54,7 +48,7 @@ function App() {
     const id = crypto.randomUUID();
     const currentTabs = tabs();
     setTabs({ ...currentTabs, [id]: { id, ...data } });
-    setActiveTab(id);
+    setActiveId(id);
   });
 
   onRequestSave(handleSaveFile);
@@ -62,13 +56,12 @@ function App() {
   // TODO: Figure out if this is necessary
   onFileSaved((data) => {
     if (!data) return;
-    const id = activeTab();
+    const id = activeId();
     const currentTabs = tabs();
     currentTabs[id].content = data.content;
     currentTabs[id].name = data.name;
     currentTabs[id].path = data.path;
     setTabs({ ...currentTabs });
-    console.log(tabsArray());
   });
 
   onRequestClose(() => handleClose());
@@ -78,12 +71,26 @@ function App() {
     Object.values(editors()).forEach((ed) => ed.dispose());
   });
 
-  onRequestPlay(() => {
-    const content = editors()[activeTab()]?.getValue();
-    if (content) strudel()?.evaluate(content);
+  onRequestPlay(async () => {
+    const content = editors()[activeId()]?.getValue();
+    if (!content) return;
+    if (playingId() && activeId() !== playingId()) {
+      console.log("restarting");
+      strudel()?.stop();
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    await strudel()?.evaluate(content);
+    if (strudel().scheduler.started) {
+      setPlaying(true);
+      setPlayingId(activeId());
+    }
   });
 
-  onRequestPause(() => strudel()?.stop());
+  onRequestPause(() => {
+    strudel()?.stop();
+    setPlaying(false);
+    setPlayingId("");
+  });
 
   function handleInitEditor(el: HTMLDivElement, tab: TabData) {
     const newEditor = initMonacoEditor(el);
@@ -99,7 +106,7 @@ function App() {
     const currentTabs = tabs();
     const newTab = { id, path: null, name: null, content: "" };
     setTabs({ ...currentTabs, [id]: newTab });
-    setActiveTab(id);
+    setActiveId(id);
   }
 
   async function handleOpenFile() {
@@ -108,12 +115,12 @@ function App() {
       const id = crypto.randomUUID();
       const currentTabs = tabs();
       setTabs({ ...currentTabs, [id]: { id, ...data } });
-      setActiveTab(id);
+      setActiveId(id);
     }
   }
 
   function handleSaveFile() {
-    const data = tabs()?.[activeTab()];
+    const data = tabs()?.[activeId()];
     const editor = editors()?.[data?.id ?? ""];
     if (!data || !editor) return;
 
@@ -122,7 +129,7 @@ function App() {
   }
 
   async function handleClose(_id?: string) {
-    const id = _id ?? activeTab();
+    const id = _id ?? activeId();
     const tab = tabs()[id];
     const editor = editors()[id];
     if (!id || !tab || !editor) return;
@@ -135,8 +142,8 @@ function App() {
       editor.dispose();
       setTabs({ ...currentTabs });
       setEditors({ ...currentEditors });
-      if (tabsArray().length === 0) setActiveTab("");
-      else setActiveTab(tabsArray()[0].id);
+      if (tabsArray().length === 0) setActiveId("");
+      else setActiveId(tabsArray()[0].id);
     }
 
     if (tab.content === editor.getValue()) {
@@ -155,8 +162,8 @@ function App() {
   return (
     <>
       <div id="navbar">
-        <Show when={activeTab()}>
-          <p>{tabs()[activeTab()]?.path ?? "untitled"}</p>
+        <Show when={playing()}>
+          <p>Playing {tabs()?.[playingId()]?.name ?? ""}</p>
         </Show>
       </div>
       <div id="tab-bar" data-visible={!!tabsArray().length}>
@@ -165,15 +172,15 @@ function App() {
             <div class="tab">
               <button
                 class="primary-action"
-                onClick={() => setActiveTab(tab.id)}
-                data-active={activeTab() === tab.id}
+                onClick={() => setActiveId(tab.id)}
+                data-active={activeId() === tab.id}
               >
                 {tab.name ?? "new file"}
               </button>
               <button
                 class="secondary-action"
                 onClick={() => handleClose(tab.id)}
-                data-active={activeTab() === tab.id}
+                data-active={activeId() === tab.id}
               >
                 <svg viewBox="0 0 16 16" width={16} height={16}>
                   <path
@@ -203,7 +210,7 @@ function App() {
               <div
                 id="editor-container"
                 ref={(el) => handleInitEditor(el, tab)}
-                data-active={activeTab() === tab.id}
+                data-active={activeId() === tab.id}
               />
             )}
           </For>
