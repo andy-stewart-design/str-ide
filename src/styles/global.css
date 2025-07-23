@@ -42,8 +42,13 @@
   --text-opacity: 1;
 
   display: flex;
+  justify-content: space-between;
   border-block-end: 1px solid transparent;
   isolation: isolate;
+
+  & > div {
+    display: flex;
+  }
 
   &[data-visible="true"] {
     background: #010e17;
@@ -56,15 +61,6 @@
     border-inline-end: 1px solid rgb(255 255 255 / 0.15);
 
     button {
-      color: rgb(255 255 255 / var(--text-opacity));
-      background: transparent;
-      border: none;
-      border-radius: 0;
-
-      &[data-active="true"] {
-        background: #011627;
-      }
-
       &[data-active="false"] {
         --text-opacity: 0.4;
       }
@@ -72,6 +68,10 @@
 
     button.primary-action {
       padding: 0 2rem 0 1rem;
+
+      &[data-active="true"] {
+        background: #011627;
+      }
     }
 
     button.secondary-action {
@@ -83,6 +83,36 @@
 
       svg {
         vertical-align: bottom;
+      }
+    }
+  }
+
+  button {
+    color: rgb(255 255 255 / var(--text-opacity));
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  button.media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: var(--tab-bar-height);
+    background: #011627;
+    border-inline-start: 1px solid rgb(255 255 255 / 0.15);
+
+    &[aria-label="play"] {
+      [data-icon="update"] {
+        opacity: 0;
+      }
+    }
+
+    &[aria-label="update"] {
+      animation: pulse 500ms infinite alternate;
+
+      [data-icon="play"] {
+        opacity: 0;
       }
     }
   }
