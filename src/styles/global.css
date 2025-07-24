@@ -10,7 +10,8 @@
   padding: 0;
   margin: 0;
   height: 100%;
-  background: #011627;
+  background: rgb(12, 12, 12);
+  /* background: blue; */
 }
 
 #root {
@@ -28,7 +29,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-block-end: 1px solid var(--border-color);
+  /* border-block-end: 1px solid var(--border-color); */
   app-region: drag;
 
   p {
@@ -43,22 +44,23 @@
 
   display: flex;
   justify-content: space-between;
-  border-block-end: 1px solid transparent;
+  /* border-block-end: 1px solid transparent; */
   isolation: isolate;
+  padding: 0.25rem 1rem;
 
   & > div {
     display: flex;
+    gap: 0.25rem;
   }
 
   &[data-visible="true"] {
-    background: #010e17;
-    border-block-end: 1px solid var(--border-color);
+    /* background: rgb(0 0 0 / 0.2); */
+    /* border-block-end: 1px solid var(--border-color); */
   }
 
   .tab {
     position: relative;
     display: grid;
-    border-inline-end: 1px solid rgb(255 255 255 / 0.15);
 
     button {
       &[data-active="false"] {
@@ -67,17 +69,18 @@
     }
 
     button.primary-action {
-      padding: 0 2rem 0 1rem;
+      padding: 0 1.75rem 0 0.75rem;
+      border: 1px solid rgb(255 255 255 / 0.1);
 
       &[data-active="true"] {
-        background: #011627;
+        background: rgb(255 255 255 / 0.1);
       }
     }
 
     button.secondary-action {
       position: absolute;
       top: 50%;
-      right: 0.75rem;
+      right: 0.575rem;
       translate: 0 -50%;
       padding: 0;
 
@@ -91,16 +94,16 @@
     color: rgb(255 255 255 / var(--text-opacity));
     background: transparent;
     border: none;
-    border-radius: 0;
+    border-radius: 0.5rem;
   }
 
   button.media {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: var(--tab-bar-height);
-    background: #011627;
-    border-inline-start: 1px solid rgb(255 255 255 / 0.15);
+    width: calc(var(--tab-bar-height) - 0.5rem);
+    background: rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.1);
 
     &[aria-label="play"] {
       [data-icon="update"] {
@@ -156,6 +159,13 @@
   &[data-active="false"] {
     visibility: hidden;
     z-index: -1;
+  }
+
+  :is(.monaco-editor) {
+    --vscode-editorGutter-background: transparent;
+    --vscode-editor-background: transparent;
+    --vscode-focusBorder: transparent !important;
+    --vscode-editorLineNumber-foreground: rgb(255 255 255 / 0.25);
   }
 }
 
