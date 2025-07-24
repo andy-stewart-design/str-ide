@@ -14,6 +14,7 @@ export interface IElectronAPI {
   >;
   onRequestPlay: (callback: () => void) => void;
   onRequestPause: (callback: () => void) => void;
+  onRequestPlayVisuals: (callback: () => void) => void;
   removeAllListeners: () => void;
 }
 

@@ -133,9 +133,9 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
-  const hasCameraPermission =
-    systemPreferences.getMediaAccessStatus("camera") === "granted";
-  console.log({ hasCameraPermission });
+  // const hasCameraPermission =
+  //   systemPreferences.getMediaAccessStatus("camera") === "granted";
+  // console.log({ hasCameraPermission });
 
   ipcMain.handle("warn-before-closing", showSaveBeforeCloseWarning);
   ipcMain.handle("open-file-dialog", openFile);

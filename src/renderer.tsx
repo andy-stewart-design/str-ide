@@ -23,6 +23,7 @@ const {
   onRequestClose,
   onRequestPlay,
   onRequestPause,
+  onRequestPlayVisuals,
   removeAllListeners,
   warnBeforeClosing,
 } = window.electronAPI;
@@ -34,14 +35,15 @@ function App() {
   const [activeId, setActiveId] = createSignal<string>("");
   const [playingId, setPlayingId] = createSignal<string>("");
   const [editors, setEditors] = createSignal<EditorGroup>({});
+  const [mediaStream, setMediaStream] = createSignal<MediaStream | null>(null);
   const [error, setError] = createSignal<string | null>(null);
   const tabsArray = () => Object.values(tabs());
+
+  let visContainer: HTMLElement | undefined = undefined;
 
   onMount(async () => {
     const strudel = await prebake({ setError });
     setStrudel(strudel);
-    // const media = await navigator.mediaDevices.getUserMedia({ video: true });
-    // console.log({ media });
   });
 
   onRequestNewFile(handleCreateNewFile);
@@ -74,6 +76,11 @@ function App() {
   });
 
   onRequestPlay(handlePlay);
+
+  onRequestPlayVisuals(async () => {
+    const media = await navigator.mediaDevices.getUserMedia({ video: true });
+    setMediaStream(media);
+  });
 
   onRequestPause(handlePause);
 
@@ -179,6 +186,18 @@ function App() {
 
   return (
     <>
+      <div id="vis-container">
+        <Show when={mediaStream()}>
+          <video
+            ref={(el) => {
+              el.srcObject = mediaStream();
+              el.onloadedmetadata = () => {
+                el.play();
+              };
+            }}
+          />
+        </Show>
+      </div>
       <div id="navbar">
         <Show when={playing()}>
           <p>Playing {tabs()?.[playingId()]?.name ?? ""}</p>

@@ -93,26 +93,29 @@ export function createSystemMenu() {
       ],
     },
     {
-      label: "Visualizer",
+      label: "Visual",
       submenu: [
         {
           label: "Play Visuals",
           // accelerator: "Alt+Return",
           click: async () => {
-            shell.openExternal(
-              "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera"
-            );
-            // const hasCameraPermission =
-            //   systemPreferences.getMediaAccessStatus("camera") === "granted";
-            // const cameraGranted =
-            //   !hasCameraPermission &&
-            //   (await systemPreferences.askForMediaAccess("camera"));
+            const hasCameraAccess =
+              systemPreferences.getMediaAccessStatus("camera") === "granted";
+            const cameraAccessGranted =
+              !hasCameraAccess &&
+              (await systemPreferences.askForMediaAccess("camera"));
 
-            // console.log({ hasCameraPermission, cameraGranted });
+            console.log({ hasCameraAccess, cameraAccessGranted });
 
-            // BrowserWindow.getFocusedWindow()?.webContents.send(
-            //   "request-play-visualizer"
+            // shell.openExternal(
+            //   "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera"
             // );
+
+            if (hasCameraAccess || cameraAccessGranted) {
+              BrowserWindow.getFocusedWindow()?.webContents.send(
+                "request-play-visuals"
+              );
+            }
           },
         },
       ],
