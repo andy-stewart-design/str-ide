@@ -33,6 +33,7 @@ function initMonacoEditor(container: HTMLElement) {
     fontSize: 14,
     padding: { top: 16 },
     automaticLayout: true,
+    stickyScroll: { enabled: false },
   });
 
   // ------------------------------------------------------------------------

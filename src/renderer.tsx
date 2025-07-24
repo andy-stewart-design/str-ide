@@ -160,7 +160,8 @@ function App() {
       const textEls = document.querySelectorAll(selector);
       if (!textEls) return;
       textEls.forEach((el) =>
-        el.animate([{ background: "#0c0c66" }, { background: "transparent" }], {
+        // el.animate([{ background: "#0c0c66" }, { background: "transparent" }], {
+        el.animate([{ background: "#0000FF" }, { background: "transparent" }], {
           duration: 200,
           easing: "steps(1, end)",
         })
