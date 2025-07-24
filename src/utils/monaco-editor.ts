@@ -11,12 +11,12 @@ function initMonacoEditor(container: HTMLElement) {
     },
   };
 
-  monaco.editor.defineTheme("NightOwl", theme);
+  monaco.editor.defineTheme("StrudelTheme", theme);
 
   const editor = monaco.editor.create(container, {
     value: "",
     language: "typescript",
-    theme: "NightOwl",
+    theme: "StrudelTheme",
     minimap: {
       enabled: false,
     },
