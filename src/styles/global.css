@@ -166,6 +166,10 @@
     --vscode-editor-background: transparent;
     --vscode-focusBorder: transparent !important;
     --vscode-editorLineNumber-foreground: rgb(255 255 255 / 0.25);
+
+    .view-overlays .current-line {
+      background: rgb(255 255 255 / 0.075);
+    }
   }
 }
 

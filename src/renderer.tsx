@@ -154,6 +154,16 @@ function App() {
     if (strudel().scheduler.started) {
       setPlaying(true);
       setPlayingId(activeId());
+
+      const selector = ".monaco-mouse-cursor-text > .view-line > span";
+      const textEls = document.querySelectorAll(selector);
+      if (!textEls) return;
+      textEls.forEach((el) =>
+        el.animate([{ background: "#0c0c66" }, { background: "transparent" }], {
+          duration: 200,
+          easing: "steps(1, end)",
+        })
+      );
     }
   }
 
