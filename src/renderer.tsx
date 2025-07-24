@@ -155,7 +155,8 @@ function App() {
       setPlaying(true);
       setPlayingId(activeId());
 
-      const selector = ".monaco-mouse-cursor-text > .view-line > span";
+      const selector =
+        '.editor-container[data-active="true"] .monaco-mouse-cursor-text > .view-line > span';
       const textEls = document.querySelectorAll(selector);
       if (!textEls) return;
       textEls.forEach((el) =>
@@ -252,9 +253,10 @@ function App() {
           <For each={tabsArray()}>
             {(tab) => (
               <div
-                id="editor-container"
+                class="editor-container"
                 ref={(el) => handleInitEditor(el, tab)}
                 data-active={activeId() === tab.id}
+                inert={activeId() !== tab.id}
               />
             )}
           </For>
