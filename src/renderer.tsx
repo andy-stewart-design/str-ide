@@ -40,6 +40,8 @@ function App() {
   onMount(async () => {
     const strudel = await prebake({ setError });
     setStrudel(strudel);
+    // const media = await navigator.mediaDevices.getUserMedia({ video: true });
+    // console.log({ media });
   });
 
   onRequestNewFile(handleCreateNewFile);

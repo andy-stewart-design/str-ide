@@ -1,4 +1,4 @@
-import { app, Menu, BrowserWindow } from "electron";
+import { app, Menu, BrowserWindow, systemPreferences, shell } from "electron";
 import { openFile } from "@/main";
 
 export function createSystemMenu() {
@@ -58,6 +58,22 @@ export function createSystemMenu() {
       ],
     },
     {
+      label: "View",
+      submenu: [
+        {
+          label: "Toggle Developer Tools",
+          accelerator:
+            process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
+          click: () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow) {
+              focusedWindow.webContents.toggleDevTools();
+            }
+          },
+        },
+      ],
+    },
+    {
       label: "Audio",
       submenu: [
         {
@@ -77,17 +93,26 @@ export function createSystemMenu() {
       ],
     },
     {
-      label: "View",
+      label: "Visualizer",
       submenu: [
         {
-          label: "Toggle Developer Tools",
-          accelerator:
-            process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
-          click: () => {
-            const focusedWindow = BrowserWindow.getFocusedWindow();
-            if (focusedWindow) {
-              focusedWindow.webContents.toggleDevTools();
-            }
+          label: "Play Visuals",
+          // accelerator: "Alt+Return",
+          click: async () => {
+            shell.openExternal(
+              "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera"
+            );
+            // const hasCameraPermission =
+            //   systemPreferences.getMediaAccessStatus("camera") === "granted";
+            // const cameraGranted =
+            //   !hasCameraPermission &&
+            //   (await systemPreferences.askForMediaAccess("camera"));
+
+            // console.log({ hasCameraPermission, cameraGranted });
+
+            // BrowserWindow.getFocusedWindow()?.webContents.send(
+            //   "request-play-visualizer"
+            // );
           },
         },
       ],
