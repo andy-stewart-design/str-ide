@@ -201,7 +201,7 @@ function App() {
           <p>Playing {tabs()?.[playingId()]?.name ?? ""}</p>
         </Show>
       </div>
-      <div id="tab-bar" data-visible={!!tabsArray().length}>
+      <div id="tab-bar">
         <Show when={tabsArray().length}>
           <div>
             {tabsArray().map((tab) => (
