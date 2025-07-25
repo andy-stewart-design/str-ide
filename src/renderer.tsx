@@ -8,7 +8,7 @@ import {
 } from "solid-js";
 import { render } from "solid-js/web";
 import Shdr from "shdr";
-import defaultFrag from "@/assets/default.frag?raw";
+import frag from "@/assets/default.frag?raw";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
 import type { FileData } from "@/types/file-data";
@@ -85,9 +85,7 @@ function App() {
 
   onRequestPlay(handlePlay);
 
-  onRequestPlayVisuals(async () => {
-    setShaderState("playing");
-  });
+  onRequestPlayVisuals(() => setShaderState("playing"));
 
   onRequestPause(handlePause);
 
@@ -257,6 +255,26 @@ function App() {
                 />
               </svg>
             </button>
+            <button
+              class="media"
+              aria-label="visual"
+              onClick={() =>
+                setShaderState((c) => (c === "playing" ? "paused" : "playing"))
+              }
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <path
+                  d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                  fill="currentColor"
+                />
+                <path
+                  fill-rule="evenodd"
+                  d="M1.38 8.28a.87.87 0 0 1 0-.566 7.003 7.003 0 0 1 13.238.006.87.87 0 0 1 0 .566A7.003 7.003 0 0 1 1.379 8.28ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  clip-rule="evenodd"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
           </div>
         </Show>
       </div>
@@ -325,41 +343,32 @@ function EditorFallback({
 function Shader(props: { state: ShaderState }) {
   const [shader, setShader] = createSignal<Shdr | null>(null);
   const [loaded, setLoaded] = createSignal(false);
+  const [visible, setVisible] = createSignal(false);
   let container: HTMLDivElement | undefined;
+
+  createEffect(() => {
+    const shdr = shader();
+    const isLoaded = loaded();
+    if (!shdr || !isLoaded) return;
+
+    if (props.state === "paused" && !shdr.paused) {
+      shdr.pause();
+      setVisible(false);
+    } else if (props.state === "playing" && shdr.paused) {
+      shdr.play();
+      setVisible(true);
+    }
+  });
 
   onMount(() => {
     if (!container) return;
-
-    console.log(props.state);
-
-    const uniforms = {
-      webcam: "webcam",
-      dpi: 64,
-      pattern_density: 1.0,
-      radius_modulation: 0.75,
-      invert_pattern: false,
-    };
-
-    const shdr = new Shdr({
-      container,
-      uniforms,
-      frag: defaultFrag,
-      glVersion: 1,
-    });
-    shdr.onLoad = () => {
-      setLoaded(true);
-      shdr.play();
-    };
+    const uniforms = { webcam: "webcam" };
+    const shdr = new Shdr({ container, uniforms, frag, glVersion: 1 });
+    shdr.onLoad = () => setLoaded(true);
     setShader(shdr);
   });
 
-  // createEffect(() => {
-  //   if (props.state === "playing") {
-  //     shader()?.pause();
-  //   } else {
-  //     shader()?.play();
-  //   }
-  // });
+  onCleanup(() => shader()?.destroy());
 
-  return <div id="vis-container" data-loaded={loaded()} ref={container} />;
+  return <div id="vis-container" data-visible={visible()} ref={container} />;
 }

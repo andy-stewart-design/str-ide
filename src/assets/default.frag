@@ -8,10 +8,10 @@ uniform vec2 u_mouse;             // Mouse position in pixels
 uniform float u_time;             // Time in seconds since shader started
 uniform sampler2D u_webcam;       // Webcam texture sampler
 uniform vec2 u_webcam_resolution;       // Webcam resolution in pixels
-uniform float u_dpi;              // Controls the density of the halftone pattern
-uniform float u_pattern_density;
-uniform float u_radius_modulation; // Controls how much the halftone pattern is affected by brightness
-uniform bool u_invert_pattern;     // Whether to invert the halftone pattern (0=normal, 1=inverted)
+
+float dpi = 64.;
+float pattern_density = 1.;
+float radius_modulation = 0.75; // Controls how much the halftone pattern is affected by brightness
 
 /**
  * Adjusts UV coordinates to maintain aspect ratio when mapping a texture to canvas
@@ -52,10 +52,10 @@ void main() {
 
     // Calculate pixelated coordinates based on aspect ratio
     // This creates a blocky/pixelated look by quantizing the UV coordinates
-    float pixelX1 = floor(((pixelatedUv.x + 1.) / 2.) * u_dpi) / (u_dpi);
-    float pixelY1 = (floor(pixelatedUv.y * u_dpi / videoAR / 2.) / (u_dpi / videoAR / 2.) + 1.) / 2.;
-    float pixelX2 = (floor(pixelatedUv.x * u_dpi * videoAR / 2.) / (u_dpi * videoAR / 2.) + 1.) / 2.;
-    float pixelY2 = floor(((pixelatedUv.y + 1.) / 2.) * u_dpi) / (u_dpi);
+    float pixelX1 = floor(((pixelatedUv.x + 1.) / 2.) * dpi) / (dpi);
+    float pixelY1 = (floor(pixelatedUv.y * dpi / videoAR / 2.) / (dpi / videoAR / 2.) + 1.) / 2.;
+    float pixelX2 = (floor(pixelatedUv.x * dpi * videoAR / 2.) / (dpi * videoAR / 2.) + 1.) / 2.;
+    float pixelY2 = floor(((pixelatedUv.y + 1.) / 2.) * dpi) / (dpi);
 
     // Choose the appropriate pixelation based on the cropping direction
     float pixelX = isCroppedHor ? pixelX2 : pixelX1;
@@ -80,31 +80,31 @@ void main() {
     halftoneUv.y = isCroppedHor ? halftoneUv.y : halftoneUv.y * u_resolution.y / u_resolution.x;
 
     // Create a repeating grid for the halftone pattern
-    float posOffX = isCroppedHor ? 0. : mod(u_dpi, 2.) / 2.;  // Offset X for even/odd DPI
-    float posOffY = isCroppedHor ? mod(u_dpi, 2.) / 2. : 0.;  // Offset Y for even/odd DPI
+    float posOffX = isCroppedHor ? 0. : mod(dpi, 2.) / 2.;  // Offset X for even/odd DPI
+    float posOffY = isCroppedHor ? mod(dpi, 2.) / 2. : 0.;  // Offset Y for even/odd DPI
 
     // Divide space into grid cells
-    halftoneUv.x = fract(halftoneUv.x * u_dpi / 2. + posOffX);
-    halftoneUv.y = fract(halftoneUv.y * u_dpi / 2. + posOffY);
+    halftoneUv.x = fract(halftoneUv.x * dpi / 2. + posOffX);
+    halftoneUv.y = fract(halftoneUv.y * dpi / 2. + posOffY);
 
     // Remap each grid cell to [-1,1] range
     halftoneUv = halftoneUv * 2.0 - 1.0;
 
     // Set parameters for the halftone effect
-    float blur = u_dpi * 0.0025;  // Edge blur amount for the circles (scales with DPI)
+    float blur = dpi * 0.0025;  // Edge blur amount for the circles (scales with DPI)
 
     // Calculate circle radius based on brightness and modulation
     // Higher brightness = larger circles when modulation is less than 1
-    float rad = (1. - u_radius_modulation + (brightness * u_radius_modulation)) * u_pattern_density;
 
     // Create a circle in each grid cell
     float d = length(halftoneUv);  // Distance from center of cell
 
+    float rad = (1. - radius_modulation + (brightness * radius_modulation)) * pattern_density;
     // Apply smoothstep to create a soft-edged circle
     d = smoothstep(rad - blur, rad + blur, d);
 
     // Apply pattern inversion if selected
-    d = u_invert_pattern ? d : (1. - d);
+    d = 1. - d;
 
     // Apply halftone pattern to the color
     color = color * d;

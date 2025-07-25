@@ -183,7 +183,7 @@
   inset: 0;
   transition: opacity 500ms ease-out;
 
-  &[data-loaded="false"] {
+  &[data-visible="false"] {
     opacity: 0;
   }
 }
