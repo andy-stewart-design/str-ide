@@ -93,7 +93,7 @@ export function createSystemMenu() {
       ],
     },
     {
-      label: "Visual",
+      label: "Visuals",
       submenu: [
         {
           label: "Play Visuals",
@@ -116,6 +116,15 @@ export function createSystemMenu() {
                 "request-play-visuals"
               );
             }
+          },
+        },
+        {
+          label: "Pause Visuals",
+          // accelerator: "Alt+Return",
+          click: async () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send(
+              "request-pause-visuals"
+            );
           },
         },
       ],

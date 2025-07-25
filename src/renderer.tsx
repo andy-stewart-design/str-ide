@@ -34,6 +34,7 @@ const {
   onRequestPlay,
   onRequestPause,
   onRequestPlayVisuals,
+  onRequestPauseVisuals,
   removeAllListeners,
   warnBeforeClosing,
 } = window.electronAPI;
@@ -85,7 +86,8 @@ function App() {
 
   onRequestPlay(handlePlay);
 
-  onRequestPlayVisuals(() => setShaderState("playing"));
+  onRequestPlayVisuals(() => toggleShaderState("playing"));
+  onRequestPauseVisuals(() => toggleShaderState("paused"));
 
   onRequestPause(handlePause);
 
@@ -189,6 +191,11 @@ function App() {
     setPlayingId("");
   }
 
+  function toggleShaderState(next?: ShaderState) {
+    if (next) setShaderState(next);
+    else setShaderState((c) => (c === "playing" ? "paused" : "playing"));
+  }
+
   return (
     <>
       <Show when={shaderState() !== "unmounted"}>
@@ -258,9 +265,7 @@ function App() {
             <button
               class="media"
               aria-label="visual"
-              onClick={() =>
-                setShaderState((c) => (c === "playing" ? "paused" : "playing"))
-              }
+              onClick={() => toggleShaderState()}
             >
               <svg width="16" height="16" viewBox="0 0 16 16">
                 <path
@@ -343,7 +348,7 @@ function EditorFallback({
 function Shader(props: { state: ShaderState }) {
   const [shader, setShader] = createSignal<Shdr | null>(null);
   const [loaded, setLoaded] = createSignal(false);
-  const [visible, setVisible] = createSignal(false);
+  const isVisible = () => loaded() && props.state === "playing";
   let container: HTMLDivElement | undefined;
 
   createEffect(() => {
@@ -353,10 +358,8 @@ function Shader(props: { state: ShaderState }) {
 
     if (props.state === "paused" && !shdr.paused) {
       shdr.pause();
-      setVisible(false);
     } else if (props.state === "playing" && shdr.paused) {
       shdr.play();
-      setVisible(true);
     }
   });
 
@@ -370,5 +373,5 @@ function Shader(props: { state: ShaderState }) {
 
   onCleanup(() => shader()?.destroy());
 
-  return <div id="vis-container" data-visible={visible()} ref={container} />;
+  return <div id="vis-container" data-visible={isVisible()} ref={container} />;
 }

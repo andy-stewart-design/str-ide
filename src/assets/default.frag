@@ -9,9 +9,9 @@ uniform float u_time;             // Time in seconds since shader started
 uniform sampler2D u_webcam;       // Webcam texture sampler
 uniform vec2 u_webcam_resolution;       // Webcam resolution in pixels
 
-float dpi = 64.;
+float dpi = 80.;
 float pattern_density = 1.;
-float radius_modulation = 0.75; // Controls how much the halftone pattern is affected by brightness
+float radius_modulation = 1.; // Controls how much the halftone pattern is affected by brightness
 
 /**
  * Adjusts UV coordinates to maintain aspect ratio when mapping a texture to canvas
