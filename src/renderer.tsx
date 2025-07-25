@@ -324,6 +324,7 @@ function EditorFallback({
 
 function Shader(props: { state: ShaderState }) {
   const [shader, setShader] = createSignal<Shdr | null>(null);
+  const [loaded, setLoaded] = createSignal(false);
   let container: HTMLDivElement | undefined;
 
   onMount(() => {
@@ -345,7 +346,10 @@ function Shader(props: { state: ShaderState }) {
       frag: defaultFrag,
       glVersion: 1,
     });
-    shdr.play();
+    shdr.onLoad = () => {
+      setLoaded(true);
+      shdr.play();
+    };
     setShader(shdr);
   });
 
@@ -357,5 +361,5 @@ function Shader(props: { state: ShaderState }) {
   //   }
   // });
 
-  return <div id="vis-container" ref={container} />;
+  return <div id="vis-container" data-loaded={loaded()} ref={container} />;
 }
