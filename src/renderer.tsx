@@ -1,5 +1,14 @@
-import { createSignal, onCleanup, onMount, Show, For } from "solid-js";
+import {
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+  For,
+  createEffect,
+} from "solid-js";
 import { render } from "solid-js/web";
+import Shdr from "shdr";
+import defaultFrag from "@/assets/default.frag?raw";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
 import type { FileData } from "@/types/file-data";
@@ -12,6 +21,7 @@ interface TabData extends FileData {
 
 type TabGroup = Record<string, TabData>;
 type EditorGroup = Record<string, Editor>;
+type ShaderState = "unmounted" | "playing" | "paused";
 
 const {
   onRequestNewFile,
@@ -35,11 +45,9 @@ function App() {
   const [activeId, setActiveId] = createSignal<string>("");
   const [playingId, setPlayingId] = createSignal<string>("");
   const [editors, setEditors] = createSignal<EditorGroup>({});
-  const [mediaStream, setMediaStream] = createSignal<MediaStream | null>(null);
+  const [shaderState, setShaderState] = createSignal<ShaderState>("unmounted");
   const [error, setError] = createSignal<string | null>(null);
   const tabsArray = () => Object.values(tabs());
-
-  let visContainer: HTMLElement | undefined = undefined;
 
   onMount(async () => {
     const strudel = await prebake({ setError });
@@ -78,8 +86,7 @@ function App() {
   onRequestPlay(handlePlay);
 
   onRequestPlayVisuals(async () => {
-    const media = await navigator.mediaDevices.getUserMedia({ video: true });
-    setMediaStream(media);
+    setShaderState("playing");
   });
 
   onRequestPause(handlePause);
@@ -186,18 +193,9 @@ function App() {
 
   return (
     <>
-      <div id="vis-container">
-        <Show when={mediaStream()}>
-          <video
-            ref={(el) => {
-              el.srcObject = mediaStream();
-              el.onloadedmetadata = () => {
-                el.play();
-              };
-            }}
-          />
-        </Show>
-      </div>
+      <Show when={shaderState() !== "unmounted"}>
+        <Shader state={shaderState()} />
+      </Show>
       <div id="navbar">
         <Show when={playing()}>
           <p>Playing {tabs()?.[playingId()]?.name ?? ""}</p>
@@ -322,4 +320,42 @@ function EditorFallback({
       <button onclick={onOpenFile}>Open file</button>
     </div>
   );
+}
+
+function Shader(props: { state: ShaderState }) {
+  const [shader, setShader] = createSignal<Shdr | null>(null);
+  let container: HTMLDivElement | undefined;
+
+  onMount(() => {
+    if (!container) return;
+
+    console.log(props.state);
+
+    const uniforms = {
+      webcam: "webcam",
+      dpi: 64,
+      pattern_density: 1.0,
+      radius_modulation: 0.75,
+      invert_pattern: false,
+    };
+
+    const shdr = new Shdr({
+      container,
+      uniforms,
+      frag: defaultFrag,
+      glVersion: 1,
+    });
+    shdr.play();
+    setShader(shdr);
+  });
+
+  // createEffect(() => {
+  //   if (props.state === "playing") {
+  //     shader()?.pause();
+  //   } else {
+  //     shader()?.play();
+  //   }
+  // });
+
+  return <div id="vis-container" ref={container} />;
 }

@@ -35,6 +35,9 @@ importers:
       monaco-editor:
         specifier: ^0.52.2
         version: 0.52.2
+      shdr:
+        specifier: ^0.3.4
+        version: 0.3.4
       solid-js:
         specifier: ^1.9.7
         version: 1.9.7
@@ -2763,6 +2766,9 @@ packages:
 
   sfumato@0.1.2:
     resolution: {integrity: sha512-j2s5BLUS5VUNtaK1l+v+yal3XjjV7JXCQIwE5Xs4yiQ3HJ+2Fc/dd3IkkrVHn0AJO2epShSWVoP3GnE0TvPdMg==}
+
+  shdr@0.3.4:
+    resolution: {integrity: sha512-WaTU/0+49nZod54BX8zUYogfXKr2PPiYXLtlDbQGY49TuZ3s0C1e57Le1xUg5xBFWp4+6gtsFkDeK/cVs5qDsw==}
 
   shebang-command@1.2.0:
     resolution: {integrity: sha512-EV3L1+UQWGor21OmnvojK36mhg+TyIKDh3iFBKBohr5xeXIhNBcx8oWdgkTEEQ+BEFFYdLRuqMfd5L84N1V5Vg==}
@@ -6547,6 +6553,8 @@ snapshots:
   sfumato@0.1.2:
     dependencies:
       soundfont2: 0.4.0
+
+  shdr@0.3.4: {}
 
   shebang-command@1.2.0:
     dependencies:
