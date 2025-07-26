@@ -99,20 +99,6 @@
     width: calc(var(--tab-bar-height) - 0.5rem);
     background: rgb(12 12 12 / 0.1);
     outline: 1px solid rgb(255 255 255 / 0.2);
-
-    &[aria-label="play"] {
-      [data-icon="update"] {
-        opacity: 0;
-      }
-    }
-
-    &[aria-label="update"] {
-      animation: pulse 500ms infinite alternate;
-
-      [data-icon="play"] {
-        opacity: 0;
-      }
-    }
   }
 }
 
