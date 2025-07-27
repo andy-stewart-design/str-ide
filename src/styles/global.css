@@ -10,12 +10,13 @@
   padding: 0;
   margin: 0;
   height: 100%;
-  background: #011627;
+  background: rgb(12, 12, 12);
+  /* background: blue; */
 }
 
 #root {
   --nav-height: 32px;
-  --tab-bar-height: 44px;
+  --tab-bar-height: 40px;
   --border-color: rgb(255 255 255 / 0.1);
 
   display: grid;
@@ -28,7 +29,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-block-end: 1px solid var(--border-color);
+  /* border-block-end: 1px solid var(--border-color); */
   app-region: drag;
 
   p {
@@ -43,22 +44,17 @@
 
   display: flex;
   justify-content: space-between;
-  border-block-end: 1px solid transparent;
   isolation: isolate;
+  padding: 0 1rem 0.5rem;
 
   & > div {
     display: flex;
-  }
-
-  &[data-visible="true"] {
-    background: #010e17;
-    border-block-end: 1px solid var(--border-color);
+    gap: 0.375rem;
   }
 
   .tab {
     position: relative;
     display: grid;
-    border-inline-end: 1px solid rgb(255 255 255 / 0.15);
 
     button {
       &[data-active="false"] {
@@ -67,17 +63,18 @@
     }
 
     button.primary-action {
-      padding: 0 2rem 0 1rem;
+      padding: 0 1.5rem 0 0.5rem;
+      outline: 1px solid rgb(255 255 255 / 0.2);
 
       &[data-active="true"] {
-        background: #011627;
+        /* background: rgb(255 255 255 / 0.1); */
       }
     }
 
     button.secondary-action {
       position: absolute;
       top: 50%;
-      right: 0.75rem;
+      right: 0.375rem;
       translate: 0 -50%;
       padding: 0;
 
@@ -89,32 +86,19 @@
 
   button {
     color: rgb(255 255 255 / var(--text-opacity));
-    background: transparent;
+    background: rgb(12 12 12 / 0.1);
     border: none;
-    border-radius: 0;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(8px);
   }
 
   button.media {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: var(--tab-bar-height);
-    background: #011627;
-    border-inline-start: 1px solid rgb(255 255 255 / 0.15);
-
-    &[aria-label="play"] {
-      [data-icon="update"] {
-        opacity: 0;
-      }
-    }
-
-    &[aria-label="update"] {
-      animation: pulse 500ms infinite alternate;
-
-      [data-icon="play"] {
-        opacity: 0;
-      }
-    }
+    width: calc(var(--tab-bar-height) - 0.5rem);
+    background: rgb(12 12 12 / 0.1);
+    outline: 1px solid rgb(255 255 255 / 0.2);
   }
 }
 
@@ -149,13 +133,35 @@
   }
 }
 
-#editor-container {
+.editor-container {
   width: 100vw;
   height: calc(100vh - var(--nav-height) - var(--tab-bar-height));
+  isolation: isolate;
 
   &[data-active="false"] {
-    visibility: hidden;
+    opacity: 0;
     z-index: -1;
+  }
+
+  :is(.monaco-editor) {
+    --vscode-editorGutter-background: transparent;
+    --vscode-editor-background: transparent;
+    --vscode-focusBorder: transparent !important;
+    --vscode-editorLineNumber-foreground: rgb(255 255 255 / 0.25);
+
+    .view-overlays {
+      z-index: 2;
+      pointer-events: none;
+      mix-blend-mode: screen;
+
+      .current-line {
+        background: rgb(255 255 255 / 0.075);
+      }
+    }
+  }
+
+  .monaco-mouse-cursor-text > .view-line > span:has(span:not(:empty)) {
+    background: rgb(12, 12, 12);
   }
 }
 
@@ -163,6 +169,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#vis-container {
+  position: absolute;
+  inset: 0;
+  transition: opacity 500ms ease-out;
+
+  &[data-visible="false"] {
+    opacity: 0;
+  }
 }
 
 #error-banner {

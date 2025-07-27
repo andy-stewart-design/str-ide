@@ -36,6 +36,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onRequestPause: (callback: () => void) => {
     ipcRenderer.on("request-pause", callback);
   },
+  onRequestPlayVisuals: (callback: () => void) => {
+    ipcRenderer.on("request-play-visuals", callback);
+  },
+  onRequestPauseVisuals: (callback: () => void) => {
+    ipcRenderer.on("request-pause-visuals", callback);
+  },
   removeAllListeners: () => {
     ipcRenderer.removeAllListeners("request-new-file");
     ipcRenderer.removeAllListeners("file-opened");
@@ -44,5 +50,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.removeAllListeners("request-close");
     ipcRenderer.removeAllListeners("request-play");
     ipcRenderer.removeAllListeners("request-pause");
+    ipcRenderer.removeAllListeners("request-play-visuals");
+    ipcRenderer.removeAllListeners("request-pause-visuals");
   },
 });

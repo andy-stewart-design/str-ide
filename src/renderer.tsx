@@ -1,5 +1,15 @@
-import { createSignal, onCleanup, onMount, Show, For } from "solid-js";
+import {
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+  For,
+  createEffect,
+} from "solid-js";
 import { render } from "solid-js/web";
+import Shdr from "shdr";
+import frag from "@/assets/default.frag?raw";
+import { AnimatedVisualizer, Play, Pause, Eye } from "@/components/icons";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
 import type { FileData } from "@/types/file-data";
@@ -12,6 +22,7 @@ interface TabData extends FileData {
 
 type TabGroup = Record<string, TabData>;
 type EditorGroup = Record<string, Editor>;
+type ShaderState = "unmounted" | "playing" | "paused";
 
 const {
   onRequestNewFile,
@@ -23,6 +34,8 @@ const {
   onRequestClose,
   onRequestPlay,
   onRequestPause,
+  onRequestPlayVisuals,
+  onRequestPauseVisuals,
   removeAllListeners,
   warnBeforeClosing,
 } = window.electronAPI;
@@ -34,6 +47,7 @@ function App() {
   const [activeId, setActiveId] = createSignal<string>("");
   const [playingId, setPlayingId] = createSignal<string>("");
   const [editors, setEditors] = createSignal<EditorGroup>({});
+  const [shaderState, setShaderState] = createSignal<ShaderState>("unmounted");
   const [error, setError] = createSignal<string | null>(null);
   const tabsArray = () => Object.values(tabs());
 
@@ -72,6 +86,9 @@ function App() {
   });
 
   onRequestPlay(handlePlay);
+
+  onRequestPlayVisuals(() => toggleShaderState("playing"));
+  onRequestPauseVisuals(() => toggleShaderState("paused"));
 
   onRequestPause(handlePause);
 
@@ -154,6 +171,18 @@ function App() {
     if (strudel().scheduler.started) {
       setPlaying(true);
       setPlayingId(activeId());
+
+      const selector =
+        '.editor-container[data-active="true"] .monaco-mouse-cursor-text > .view-line > span';
+      const textEls = document.querySelectorAll(selector);
+      if (!textEls) return;
+      textEls.forEach((el) =>
+        // el.animate([{ background: "#0c0c66" }, { background: "transparent" }], {
+        el.animate([{ background: "#0000FF" }, { background: "transparent" }], {
+          duration: 200,
+          easing: "steps(1, end)",
+        })
+      );
     }
   }
 
@@ -163,14 +192,22 @@ function App() {
     setPlayingId("");
   }
 
+  function toggleShaderState(next?: ShaderState) {
+    if (next) setShaderState(next);
+    else setShaderState((c) => (c === "playing" ? "paused" : "playing"));
+  }
+
   return (
     <>
+      <Show when={shaderState() !== "unmounted"}>
+        <Shader state={shaderState()} />
+      </Show>
       <div id="navbar">
         <Show when={playing()}>
           <p>Playing {tabs()?.[playingId()]?.name ?? ""}</p>
         </Show>
       </div>
-      <div id="tab-bar" data-visible={!!tabsArray().length}>
+      <div id="tab-bar">
         <Show when={tabsArray().length}>
           <div>
             {tabsArray().map((tab) => (
@@ -200,31 +237,20 @@ function App() {
             ))}
           </div>
           <div>
-            <button
-              class="media"
-              aria-label={playing() ? "update" : "play"}
-              onClick={handlePlay}
-            >
-              <svg width="16" height="16" viewBox="0 0 20 20">
-                <path
-                  data-icon="play"
-                  d="M16.4806 9.13176C17.1524 9.51565 17.1524 10.4844 16.4806 10.8682L5.49614 17.1451C4.82948 17.526 4 17.0446 4 16.2768L4 3.72318C4 2.95536 4.82948 2.47399 5.49614 2.85494L16.4806 9.13176Z"
-                  fill="currentColor"
-                />
-                <path
-                  data-icon="update"
-                  d="M19 10C19 14.9706 14.9706 19 10 19C7.17087 19 4.64922 17.6934 3 15.6543V19H1V13C1 12.7348 1.10543 12.4805 1.29297 12.293C1.48051 12.1054 1.73478 12 2 12H8V14H4.25586C5.52176 15.8143 7.62285 17 10 17C13.866 17 17 13.866 17 10H19ZM19 7C19 7.26522 18.8946 7.5195 18.707 7.70703C18.5195 7.89457 18.2652 8 18 8H12V6H15.7441C14.4782 4.1857 12.3772 3 10 3C6.13401 3 3 6.13401 3 10H1C1 5.02944 5.02944 1 10 1C12.8289 1 15.3508 2.30596 17 4.34473V1H19V7Z"
-                  fill="currentColor"
-                />
-              </svg>
+            <button class="media" onClick={handlePlay}>
+              <Show when={playing()} fallback={<Play />}>
+                <AnimatedVisualizer />
+              </Show>
             </button>
             <button class="media" aria-label="pause" onClick={handlePause}>
-              <svg width="16" height="16" viewBox="0 0 20 20">
-                <path
-                  d="M7 2C7.55228 2 8 2.44772 8 3V17C8 17.5523 7.55228 18 7 18H5C4.44772 18 4 17.5523 4 17V3C4 2.44772 4.44772 2 5 2H7ZM15 2C15.5523 2 16 2.44772 16 3V17C16 17.5523 15.5523 18 15 18H13C12.4477 18 12 17.5523 12 17V3C12 2.44772 12.4477 2 13 2H15Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <Pause />
+            </button>
+            <button
+              class="media"
+              aria-label="visual"
+              onClick={() => toggleShaderState()}
+            >
+              <Eye />
             </button>
           </div>
         </Show>
@@ -242,9 +268,10 @@ function App() {
           <For each={tabsArray()}>
             {(tab) => (
               <div
-                id="editor-container"
+                class="editor-container"
                 ref={(el) => handleInitEditor(el, tab)}
                 data-active={activeId() === tab.id}
+                inert={activeId() !== tab.id}
               />
             )}
           </For>
@@ -288,4 +315,35 @@ function EditorFallback({
       <button onclick={onOpenFile}>Open file</button>
     </div>
   );
+}
+
+function Shader(props: { state: ShaderState }) {
+  const [shader, setShader] = createSignal<Shdr | null>(null);
+  const [loaded, setLoaded] = createSignal(false);
+  const isVisible = () => loaded() && props.state === "playing";
+  let container: HTMLDivElement | undefined;
+
+  createEffect(() => {
+    const shdr = shader();
+    const isLoaded = loaded();
+    if (!shdr || !isLoaded) return;
+
+    if (props.state === "paused" && !shdr.paused) {
+      shdr.pause();
+    } else if (props.state === "playing" && shdr.paused) {
+      shdr.play();
+    }
+  });
+
+  onMount(() => {
+    if (!container) return;
+    const uniforms = { webcam: "webcam" };
+    const shdr = new Shdr({ container, uniforms, frag, glVersion: 1 });
+    shdr.onLoad = () => setLoaded(true);
+    setShader(shdr);
+  });
+
+  onCleanup(() => shader()?.destroy());
+
+  return <div id="vis-container" data-visible={isVisible()} ref={container} />;
 }

@@ -5,6 +5,7 @@ import {
   globalShortcut,
   ipcMain,
   screen,
+  systemPreferences,
 } from "electron";
 import started from "electron-squirrel-startup";
 import path from "node:path";
@@ -118,7 +119,7 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
-    backgroundColor: "#011627",
+    backgroundColor: "#0c0c0c",
   });
 
   createSystemMenu();
@@ -132,6 +133,10 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
+  // const hasCameraPermission =
+  //   systemPreferences.getMediaAccessStatus("camera") === "granted";
+  // console.log({ hasCameraPermission });
+
   ipcMain.handle("warn-before-closing", showSaveBeforeCloseWarning);
   ipcMain.handle("open-file-dialog", openFile);
   ipcMain.handle("save-file", (_, path: string, content: string) =>

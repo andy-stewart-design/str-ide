@@ -1,4 +1,4 @@
-import { app, Menu, BrowserWindow } from "electron";
+import { app, Menu, BrowserWindow, systemPreferences, shell } from "electron";
 import { openFile } from "@/main";
 
 export function createSystemMenu() {
@@ -58,6 +58,22 @@ export function createSystemMenu() {
       ],
     },
     {
+      label: "View",
+      submenu: [
+        {
+          label: "Toggle Developer Tools",
+          accelerator:
+            process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
+          click: () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow) {
+              focusedWindow.webContents.toggleDevTools();
+            }
+          },
+        },
+      ],
+    },
+    {
       label: "Audio",
       submenu: [
         {
@@ -77,17 +93,38 @@ export function createSystemMenu() {
       ],
     },
     {
-      label: "View",
+      label: "Visuals",
       submenu: [
         {
-          label: "Toggle Developer Tools",
-          accelerator:
-            process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
-          click: () => {
-            const focusedWindow = BrowserWindow.getFocusedWindow();
-            if (focusedWindow) {
-              focusedWindow.webContents.toggleDevTools();
+          label: "Play Visuals",
+          // accelerator: "Alt+Return",
+          click: async () => {
+            const hasCameraAccess =
+              systemPreferences.getMediaAccessStatus("camera") === "granted";
+            const cameraAccessGranted =
+              !hasCameraAccess &&
+              (await systemPreferences.askForMediaAccess("camera"));
+
+            console.log({ hasCameraAccess, cameraAccessGranted });
+
+            // shell.openExternal(
+            //   "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera"
+            // );
+
+            if (hasCameraAccess || cameraAccessGranted) {
+              BrowserWindow.getFocusedWindow()?.webContents.send(
+                "request-play-visuals"
+              );
             }
+          },
+        },
+        {
+          label: "Pause Visuals",
+          // accelerator: "Alt+Return",
+          click: async () => {
+            BrowserWindow.getFocusedWindow()?.webContents.send(
+              "request-pause-visuals"
+            );
           },
         },
       ],
