@@ -136,6 +136,7 @@
 .editor-container {
   width: 100vw;
   height: calc(100vh - var(--nav-height) - var(--tab-bar-height));
+  isolation: isolate;
 
   &[data-active="false"] {
     opacity: 0;
@@ -148,8 +149,14 @@
     --vscode-focusBorder: transparent !important;
     --vscode-editorLineNumber-foreground: rgb(255 255 255 / 0.25);
 
-    .view-overlays .current-line {
-      background: rgb(255 255 255 / 0.075);
+    .view-overlays {
+      z-index: 2;
+      pointer-events: none;
+      mix-blend-mode: screen;
+
+      .current-line {
+        background: rgb(255 255 255 / 0.075);
+      }
     }
   }
 
