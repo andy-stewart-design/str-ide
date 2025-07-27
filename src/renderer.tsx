@@ -1,14 +1,7 @@
-import {
-  createSignal,
-  onCleanup,
-  onMount,
-  Show,
-  For,
-  createEffect,
-} from "solid-js";
+import { createSignal, onCleanup, onMount, Show, For } from "solid-js";
+import { createStore, produce } from "solid-js/store";
 import { render } from "solid-js/web";
-import Shdr from "shdr";
-import frag from "@/assets/default.frag?raw";
+import Shader from "@/components/shader";
 import { AnimatedVisualizer, Play, Pause, Eye } from "@/components/icons";
 import { initMonacoEditor } from "@/utils/monaco-editor";
 import { prebake } from "@/utils/strudel.js";
@@ -41,15 +34,15 @@ const {
 } = window.electronAPI;
 
 function App() {
+  const [tabs, setTabs] = createStore<TabGroup>({});
+  const [editors, setEditors] = createStore<EditorGroup>({});
   const [playing, setPlaying] = createSignal(false);
   const [strudel, setStrudel] = createSignal<any | null>(null);
-  const [tabs, setTabs] = createSignal<TabGroup>({});
   const [activeId, setActiveId] = createSignal<string>("");
   const [playingId, setPlayingId] = createSignal<string>("");
-  const [editors, setEditors] = createSignal<EditorGroup>({});
   const [shaderState, setShaderState] = createSignal<ShaderState>("unmounted");
   const [error, setError] = createSignal<string | null>(null);
-  const tabsArray = () => Object.values(tabs());
+  const tabsArray = () => Object.values(tabs);
 
   onMount(async () => {
     const strudel = await prebake({ setError });
@@ -60,29 +53,28 @@ function App() {
 
   onFileOpened((data) => {
     const id = crypto.randomUUID();
-    const currentTabs = tabs();
-    setTabs({ ...currentTabs, [id]: { id, ...data } });
+    setTabs({ ...tabs, [id]: { id, ...data } });
     setActiveId(id);
   });
 
   onRequestSave(handleSaveFile);
 
-  // TODO: Figure out if this is necessary
   onFileSaved((data) => {
     if (!data) return;
-    const id = activeId();
-    const currentTabs = tabs();
-    currentTabs[id].content = data.content;
-    currentTabs[id].name = data.name;
-    currentTabs[id].path = data.path;
-    setTabs({ ...currentTabs });
+    const handleUpdateTabs = (tabs: TabGroup) => {
+      const id = activeId();
+      tabs[id].content = data.content;
+      tabs[id].name = data.name;
+      tabs[id].path = data.path;
+    };
+    setTabs(produce(handleUpdateTabs));
   });
 
   onRequestClose(() => handleClose());
 
   onCleanup(() => {
     removeAllListeners();
-    Object.values(editors()).forEach((ed) => ed.dispose());
+    Object.values(editors).forEach((ed) => ed.dispose());
   });
 
   onRequestPlay(handlePlay);
@@ -94,18 +86,15 @@ function App() {
 
   function handleInitEditor(el: HTMLDivElement, tab: TabData) {
     const newEditor = initMonacoEditor(el);
-    const currentEditors = editors();
-    setEditors({ ...currentEditors, [tab.id]: newEditor });
-
     newEditor.setValue(tab.content);
     requestAnimationFrame(() => newEditor.focus());
+    setEditors({ ...editors, [tab.id]: newEditor });
   }
 
   function handleCreateNewFile() {
     const id = crypto.randomUUID();
-    const currentTabs = tabs();
     const newTab = { id, path: null, name: null, content: "" };
-    setTabs({ ...currentTabs, [id]: newTab });
+    setTabs({ ...tabs, [id]: newTab });
     setActiveId(id);
   }
 
@@ -113,15 +102,14 @@ function App() {
     const data = await openFile();
     if (data) {
       const id = crypto.randomUUID();
-      const currentTabs = tabs();
-      setTabs({ ...currentTabs, [id]: { id, ...data } });
+      setTabs({ ...tabs, [id]: { id, ...data } });
       setActiveId(id);
     }
   }
 
   function handleSaveFile() {
-    const data = tabs()?.[activeId()];
-    const editor = editors()?.[data?.id ?? ""];
+    const data = tabs[activeId()];
+    const editor = editors[data?.id ?? ""];
     if (!data || !editor) return;
 
     const content = editor.getValue();
@@ -130,18 +118,14 @@ function App() {
 
   async function handleClose(_id?: string) {
     const id = _id ?? activeId();
-    const tab = tabs()[id];
-    const editor = editors()[id];
+    const tab = tabs[id];
+    const editor = editors[id];
     if (!id || !tab || !editor) return;
 
     function destroy() {
-      const currentTabs = tabs();
-      const currentEditors = editors();
-      delete currentTabs[id];
-      delete currentEditors[id];
       editor.dispose();
-      setTabs({ ...currentTabs });
-      setEditors({ ...currentEditors });
+      setTabs(produce((draft) => delete draft[id]));
+      setEditors(produce((draft) => delete draft[id]));
       if (tabsArray().length === 0) setActiveId("");
       else setActiveId(tabsArray()[0].id);
     }
@@ -160,7 +144,7 @@ function App() {
   }
 
   async function handlePlay() {
-    const content = editors()[activeId()]?.getValue();
+    const content = editors[activeId()]?.getValue();
     if (!content) return;
     if (playingId() && activeId() !== playingId()) {
       console.log("restarting");
@@ -200,11 +184,11 @@ function App() {
   return (
     <>
       <Show when={shaderState() !== "unmounted"}>
-        <Shader state={shaderState()} />
+        <Shader playState={shaderState} />
       </Show>
       <div id="navbar">
-        <Show when={playing()}>
-          <p>Playing {tabs()?.[playingId()]?.name ?? ""}</p>
+        <Show when={playingId()}>
+          <p>Playing {tabs[playingId()]?.name ?? ""}</p>
         </Show>
       </div>
       <div id="tab-bar">
@@ -315,35 +299,4 @@ function EditorFallback({
       <button onclick={onOpenFile}>Open file</button>
     </div>
   );
-}
-
-function Shader(props: { state: ShaderState }) {
-  const [shader, setShader] = createSignal<Shdr | null>(null);
-  const [loaded, setLoaded] = createSignal(false);
-  const isVisible = () => loaded() && props.state === "playing";
-  let container: HTMLDivElement | undefined;
-
-  createEffect(() => {
-    const shdr = shader();
-    const isLoaded = loaded();
-    if (!shdr || !isLoaded) return;
-
-    if (props.state === "paused" && !shdr.paused) {
-      shdr.pause();
-    } else if (props.state === "playing" && shdr.paused) {
-      shdr.play();
-    }
-  });
-
-  onMount(() => {
-    if (!container) return;
-    const uniforms = { webcam: "webcam" };
-    const shdr = new Shdr({ container, uniforms, frag, glVersion: 1 });
-    shdr.onLoad = () => setLoaded(true);
-    setShader(shdr);
-  });
-
-  onCleanup(() => shader()?.destroy());
-
-  return <div id="vis-container" data-visible={isVisible()} ref={container} />;
 }
