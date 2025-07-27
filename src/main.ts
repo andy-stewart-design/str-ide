@@ -82,7 +82,7 @@ async function saveFile(
 }
 
 async function showSaveBeforeCloseWarning() {
-  const filename = "renderer.tsx";
+  const filename = "renderer.ts";
   const focusedWindow = BrowserWindow.getFocusedWindow();
   if (!focusedWindow) return;
 

@@ -1,8 +1,10 @@
 {
+  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "strict": true,
-    "target": "ESNext",
-    "module": "commonjs",
+    "target": "ES2022",
+    "module": "ESNext",
+    "useDefineForClassFields": true,
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -10,12 +12,13 @@
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "jsx": "preserve", // or "react-jsx" if using Solid's JSX transform
     "jsxImportSource": "solid-js",
     "paths": {
       "@/*": ["./src/*"] // Example alias for the 'src' directory
     }
-  }
+  },
+  "exclude": ["node_modules/*", ".vite/*", "public/*"]
 }
