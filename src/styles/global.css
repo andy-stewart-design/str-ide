@@ -39,7 +39,7 @@
   }
 }
 
-#tab-bar {
+#action-bar {
   --text-opacity: 1;
 
   display: flex;
