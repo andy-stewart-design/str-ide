@@ -34,6 +34,7 @@ function initMonacoEditor(container: HTMLElement) {
     padding: { top: 16 },
     automaticLayout: true,
     stickyScroll: { enabled: false },
+    folding: false,
   });
 
   PolyfillKeyCommands(editor);

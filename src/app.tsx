@@ -53,9 +53,16 @@ function App() {
   onRequestNewFile(handleCreateNewFile);
 
   onFileOpened((data) => {
-    const id = crypto.randomUUID();
-    setTabs({ ...tabs, [id]: { id, ...data } });
-    setActiveId(id);
+    const tab = Object.values(tabs).find((t) => t.path === data.path);
+
+    if (tab) {
+      // file is already open
+      setActiveId(tab.id);
+    } else {
+      const id = crypto.randomUUID();
+      setTabs({ ...tabs, [id]: { id, ...data } });
+      setActiveId(id);
+    }
   });
 
   onRequestSave(handleSaveFile);
