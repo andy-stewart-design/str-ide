@@ -46,8 +46,6 @@ async function prebake({ setError }) {
     transpiler,
     onEvalError: (refErr) => setError(refErr.message), // refErr: ReferenceError
     afterEval: () => setError(null),
-    // onUpdateState: () => console.log("[STR-IDE] State updated!!!"),
-    // setInterval: () => console.log("[STR-IDE] Setting interval!!!"),
   });
 }
 
