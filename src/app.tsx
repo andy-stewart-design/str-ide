@@ -47,6 +47,8 @@ function App() {
 
   onMount(async () => {
     const strudel = await prebake({ setError });
+    console.log("scheduler", strudel.scheduler);
+
     setStrudel(strudel);
   });
 
@@ -176,6 +178,7 @@ function App() {
         })
       );
     }
+    console.log("scheduler", strudel().scheduler);
   }
 
   function handlePause() {
